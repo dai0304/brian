@@ -12,7 +12,7 @@
     </property>
   </bean>
 
-  <bean id="s3" class="com.amazonaws.services.s3.AmazonS3Client" primary="true" />
+  <bean id="s3" class="com.amazonaws.services.s3.AmazonS3Client" />
 
   <bean id="sqs" class="com.amazonaws.services.sqs.AmazonSQSClient">
     <property name="region" ref="region" />

@@ -1,4 +1,4 @@
-package jp.classmethod.aws.myung;
+package jp.classmethod.aws.brian;
 
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
@@ -9,13 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 
-public class MyungSchedulerFactoryBean extends SchedulerFactoryBean {
+public class BrianSchedulerFactoryBean extends SchedulerFactoryBean {
 	
 	private static Logger logger = LoggerFactory.getLogger(SchedulerFactoryBean.class);
 	
 	@Autowired
-	@Qualifier("myungQuartzJob")
-	JobDetail myungQuartzJob;
+	@Qualifier("brianQuartzJob")
+	JobDetail quartzJob;
 	
 	
 	@Override
@@ -24,7 +24,7 @@ public class MyungSchedulerFactoryBean extends SchedulerFactoryBean {
 		
 		Scheduler scheduler = getScheduler();
 		try {
-			scheduler.addJob(myungQuartzJob, true, false);
+			scheduler.addJob(quartzJob, true, false);
 		} catch (SchedulerException e) {
 			logger.error("Adding job to the scheduler is failed", e);
 		}

@@ -1,4 +1,4 @@
-package jp.classmethod.aws.myung;
+package jp.classmethod.aws.brian;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -18,9 +18,9 @@ import com.amazonaws.services.sns.AmazonSNS;
 import com.google.gson.Gson;
 
 
-public class MyungQuartzJobBean extends QuartzJobBean {
+public class BrianQuartzJobBean extends QuartzJobBean {
 	
-	private static Logger logger = LoggerFactory.getLogger(MyungQuartzJobBean.class);
+	private static Logger logger = LoggerFactory.getLogger(BrianQuartzJobBean.class);
 	
 	/** detailed date format */
 	public static final String DATE_FORMAT = "yyyy/MM/dd HH:mm:ss.SSS zzz";

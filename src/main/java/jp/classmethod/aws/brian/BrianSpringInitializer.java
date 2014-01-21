@@ -13,13 +13,13 @@
  * either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-package jp.classmethod.aws.myung;
+package jp.classmethod.aws.brian;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration.Dynamic;
 
-import jp.classmethod.aws.myung.utils.InitializationUtil;
+import jp.classmethod.aws.brian.utils.InitializationUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,9 +29,9 @@ import org.springframework.web.context.support.XmlWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
 @SuppressWarnings("javadoc")
-public class MyungSpringInitializer implements WebApplicationInitializer {
+public class BrianSpringInitializer implements WebApplicationInitializer {
 	
-	private static Logger logger = LoggerFactory.getLogger(MyungSpringInitializer.class);
+	private static Logger logger = LoggerFactory.getLogger(BrianSpringInitializer.class);
 	
 	@Override
 	public void onStartup(ServletContext container) throws ServletException {

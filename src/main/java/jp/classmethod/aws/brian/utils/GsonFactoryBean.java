@@ -1,4 +1,4 @@
-package jp.classmethod.aws.myung.utils;
+package jp.classmethod.aws.brian.utils;
 
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;

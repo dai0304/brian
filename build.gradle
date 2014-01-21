@@ -3,8 +3,9 @@ apply plugin: 'war'
 apply plugin: 'eclipse'
 
 // ======== Generic ========
-group = 'jp.classmethod.aws.myung'
-version = '1.0'
+group = 'jp.classmethod.aws'
+ext.artifactId = 'brian'
+version = '1.0-SNAPSHOT'
 
 task wrapper(type: Wrapper) {
 	gradleVersion = '1.8'
@@ -126,8 +127,7 @@ task setSystemProperties << {
 	System.setProperty 'PARAM1', PARAM1
 	System.setProperty 'PARAM2', PARAM2
 	System.setProperty 'PARAM3', PARAM3
-	System.setProperty 'PARAM3', PARAM3
-	if (project.hasProperty('INITIALIZE_DATABASE')) System.setProperty 'INITIALIZE_DATABASE', INITIALIZE_DATABASE
+	System.setProperty 'PARAM4', PARAM4
 	System.setProperty 'aws.accessKeyId', awsAccessKey
 	System.setProperty 'aws.secretKey', awsSecretKey
 	System.setProperty 'spring.profiles.active', springProfilesActive

@@ -1,4 +1,4 @@
-package jp.classmethod.aws.myung;
+package jp.classmethod.aws.brian;
 
 
 /**

@@ -10,8 +10,8 @@
   <import resource="classpath:/META-INF/spring/datasource-context.xml"/>
   <import resource="classpath:/META-INF/spring/aws-context.xml"/>
 
-  <bean id="quartzScheduler" class="jp.classmethod.aws.myung.MyungSchedulerFactoryBean">
-    <property name="schedulerName" value="MyungScheduler" />
+  <bean id="quartzScheduler" class="jp.classmethod.aws.brian.BrianSchedulerFactoryBean">
+    <property name="schedulerName" value="BrianScheduler" />
     <property name="dataSource" ref="dataSource" />
     <property name="transactionManager" ref="transactionManager" />
     <property name="waitForJobsToCompleteOnShutdown" value="true" />
@@ -25,7 +25,7 @@
     </property>
     <property name="quartzProperties">
       <props>
-        <prop key="org.quartz.scheduler.instanceName">MyungScheduler</prop>
+        <prop key="org.quartz.scheduler.instanceName">BrianScheduler</prop>
         <prop key="org.quartz.scheduler.instanceId">#{instanceMetadata.instanceId}</prop>
         <prop key="org.quartz.jobStore.misfireThreshold">86400000</prop><!-- 24hr = 86400000ms -->
         <prop key="org.quartz.jobStore.class">org.quartz.impl.jdbcjobstore.JobStoreTX</prop>
@@ -45,13 +45,13 @@
     </property>
   </bean>
 
-  <bean id="myungQuartzJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
-    <property name="jobClass" value="jp.classmethod.aws.myung.MyungQuartzJobBean" />
+  <bean id="brianQuartzJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+    <property name="jobClass" value="jp.classmethod.aws.brian.BrianQuartzJobBean" />
     <property name="group" value="DEFAULT" />
-    <property name="name" value="myungQuartzJob" />
+    <property name="name" value="brianQuartzJob" />
     <property name="durability" value="true" />
   </bean>
 
-  <bean id="gson" class="jp.classmethod.aws.myung.utils.GsonFactoryBean" />
+  <bean id="gson" class="jp.classmethod.aws.brian.utils.GsonFactoryBean" />
 
 </beans>

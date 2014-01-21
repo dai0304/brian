@@ -9,8 +9,6 @@
   <import resource="classpath:/META-INF/spring/quartz-context.xml"/>
 
   <context:annotation-config />
-  <context:component-scan base-package="jp.classmethod.aws.myung" />
-
-  <bean id="myungConfig" class="jp.classmethod.aws.myung.model.MyungConfigFactoryBean" />
+  <context:component-scan base-package="jp.classmethod.aws.brian" />
 
 </beans>
