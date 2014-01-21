@@ -89,8 +89,6 @@ dependencies {
 		exclude group: 'org.slf4j', module: 'slf4j-log4j12'
 	}
 	
-	compile "javax.servlet:javax.servlet-api:3.0.1"
-
 	compile "mysql:mysql-connector-java:$mysqlVersion"
 	compile "com.google.guava:guava:$guavaVersion"
 	compile "commons-dbcp:commons-dbcp:1.4"
