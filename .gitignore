@@ -1,0 +1,11 @@
+target
+bin
+build
+classes
+gradle.properties
+gradle
+.gradle
+.project
+.settings
+.classpath
+.DS_Store

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd">
+
+  <bean id="instanceMetadata" class="jp.classmethod.aws.InstanceMetadataFactoryBean" />
+  <bean id="region" class="jp.classmethod.aws.RegionFactoryBean">
+    <property name="defaultRegion">
+      <util:constant static-field="com.amazonaws.regions.Regions.AP_NORTHEAST_1" />
+    </property>
+  </bean>
+
+  <bean id="s3" class="com.amazonaws.services.s3.AmazonS3Client" />
+
+  <bean id="sqs" class="com.amazonaws.services.sqs.AmazonSQSClient">
+    <property name="region" ref="region" />
+  </bean>
+
+  <bean id="sns" class="com.amazonaws.services.sns.AmazonSNSClient">
+    <property name="region" ref="region" />
+  </bean>
+
+</beans>
