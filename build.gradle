@@ -12,7 +12,7 @@ apply plugin: 'version-injection'
 // ======== Generic ========
 group = 'jp.classmethod.aws'
 ext.artifactId = 'brian'
-version = '0.1-SNAPSHOT'
+version = '0.1'
 
 task wrapper(type: Wrapper) {
 	gradleVersion = '1.8'
