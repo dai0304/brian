@@ -26,8 +26,7 @@ public class MyungSchedulerFactoryBean extends SchedulerFactoryBean {
 		try {
 			scheduler.addJob(myungQuartzJob, true, false);
 		} catch (SchedulerException e) {
-			logger.error("", e);
+			logger.error("Adding job to the scheduler is failed", e);
 		}
 	}
-	
 }
