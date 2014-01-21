@@ -11,16 +11,6 @@ package jp.classmethod.aws.brian;
 public final class Version {
 	
 	/**
-	 * ビルド番号を返す。
-	 * 
-	 * @return ビルド番号
-	 * @since 1.0
-	 */
-	public static String getBuildNumberString() {
-		return "[WORKING]"; // maven-injection-plugin による自動書き換え
-	}
-	
-	/**
 	 * バージョン番号を返す。
 	 * 
 	 * @return バージョン番号

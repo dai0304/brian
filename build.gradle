@@ -1,6 +1,13 @@
+buildscript {
+	repositories.mavenCentral()
+	dependencies.classpath 'org.hibernate.build.gradle:version-injection-plugin:1.0.0'
+}
+
 apply plugin: 'java'
 apply plugin: 'war'
 apply plugin: 'eclipse'
+apply plugin: 'version-injection'
+
 
 // ======== Generic ========
 group = 'jp.classmethod.aws'
@@ -10,6 +17,7 @@ version = '1.0-SNAPSHOT'
 task wrapper(type: Wrapper) {
 	gradleVersion = '1.8'
 }
+
 
 // ======== Java ========
 ext.defaultEncoding = 'UTF-8'
@@ -46,6 +54,12 @@ test {
 		html.enabled = true
 		junitXml.outputPerTestCase = false
 	}
+}
+
+// ソースバンドル・Javadocバンドルの作成
+
+versionInjection {
+	into('jp.classmethod.aws.brian.Version', 'getVersionString')
 }
 
 // ソースバンドル・Javadocバンドルの作成

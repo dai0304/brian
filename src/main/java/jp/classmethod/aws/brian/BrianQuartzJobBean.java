@@ -107,6 +107,7 @@ public class BrianQuartzJobBean extends QuartzJobBean {
 			String json = gson.toJson(context);
 			logger.info("-------- Message");
 			logger.info(json);
+			
 			sns.publish(topicArn, json);
 			
 			logger.info("======== Job Finished");
