@@ -1,26 +1,28 @@
 buildscript {
 	repositories.mavenCentral()
-	dependencies.classpath 'org.hibernate.build.gradle:version-injection-plugin:1.0.0'
+	dependencies {
+		classpath 'org.hibernate.build.gradle:version-injection-plugin:1.0.0'
+		classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.7.0'
+	}
 }
 
 apply plugin: 'java'
 apply plugin: 'war'
 apply plugin: 'eclipse'
 apply plugin: 'version-injection'
+apply plugin: 'license'
 
+defaultTasks 'clean', 'build'
 
 // ======== Generic ========
 group = 'jp.classmethod.aws'
-ext.artifactId = 'brian'
 version = '0.2-SNAPSHOT'
-
-task wrapper(type: Wrapper) {
-	gradleVersion = '1.8'
+ext {
+	artifactId = 'brian'
+	defaultEncoding = 'UTF-8'
 }
 
-
 // ======== Java ========
-ext.defaultEncoding = 'UTF-8'
 sourceCompatibility = targetCompatibility = 1.7
 tasks.withType(AbstractCompile) each {
 	it.options.encoding = ext.defaultEncoding
@@ -57,13 +59,11 @@ test {
 }
 
 // version injection
-
 versionInjection {
 	into('jp.classmethod.aws.brian.Version', 'getVersionString')
 }
 
-// ソースバンドル・Javadocバンドルの作成
-
+// create source and javadoc bundles
 task sourcesJar(type: Jar, dependsOn: classes) {
 	classifier = 'sources'
 	from sourceSets.main.allSource
@@ -182,3 +182,15 @@ clean {
 	delete << 'src/main/webapp/WEB-INF/classes'
 }
 
+
+// ======== wrapper ========
+task wrapper(type: Wrapper) {
+	gradleVersion = '1.8'
+}
+
+// ======== License =======
+license {
+	ext.year = Calendar.getInstance().get(Calendar.YEAR)
+	header rootProject.file('copyright/HEADER')
+	strictCheck true
+}
