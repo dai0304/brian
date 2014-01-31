@@ -56,7 +56,7 @@ test {
 	}
 }
 
-// ソースバンドル・Javadocバンドルの作成
+// version injection
 
 versionInjection {
 	into('jp.classmethod.aws.brian.Version', 'getVersionString')
@@ -141,7 +141,6 @@ task setSystemProperties << {
 	System.setProperty 'PARAM1', PARAM1
 	System.setProperty 'PARAM2', PARAM2
 	System.setProperty 'PARAM3', PARAM3
-	System.setProperty 'PARAM4', PARAM4
 	System.setProperty 'aws.accessKeyId', awsAccessKey
 	System.setProperty 'aws.secretKey', awsSecretKey
 	System.setProperty 'spring.profiles.active', springProfilesActive

@@ -1,4 +1,4 @@
-package jp.classmethod.aws.brian;
+package jp.classmethod.aws.brian.job;
 
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;

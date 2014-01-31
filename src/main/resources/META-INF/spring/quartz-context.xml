@@ -10,7 +10,7 @@
   <import resource="classpath:/META-INF/spring/datasource-context.xml"/>
   <import resource="classpath:/META-INF/spring/aws-context.xml"/>
 
-  <bean id="quartzScheduler" class="jp.classmethod.aws.brian.BrianSchedulerFactoryBean">
+  <bean id="quartzScheduler" class="jp.classmethod.aws.brian.job.BrianSchedulerFactoryBean">
     <property name="schedulerName" value="BrianScheduler" />
     <property name="dataSource" ref="dataSource" />
     <property name="transactionManager" ref="transactionManager" />
@@ -46,7 +46,7 @@
   </bean>
 
   <bean id="brianQuartzJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
-    <property name="jobClass" value="jp.classmethod.aws.brian.BrianQuartzJobBean" />
+    <property name="jobClass" value="jp.classmethod.aws.brian.job.BrianQuartzJobBean" />
     <property name="group" value="DEFAULT" />
     <property name="name" value="brianQuartzJob" />
     <property name="durability" value="true" />
