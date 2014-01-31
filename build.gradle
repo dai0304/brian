@@ -95,34 +95,38 @@ configurations {
 }
 
 dependencies {
+	// Logging
 	compile "org.slf4j:slf4j-api:$slf4jVersion"
 	compile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
 	compile "org.slf4j:log4j-over-slf4j:$slf4jVersion"
 	compile "ch.qos.logback:logback-classic:$logbackVersion"
-
 	compile ('org.lazyluke:log4jdbc-remix:0.2.7') {
 		exclude group: 'org.slf4j', module: 'slf4j-log4j12'
 	}
 	
-	compile "mysql:mysql-connector-java:$mysqlVersion"
-	compile "com.google.guava:guava:$guavaVersion"
-	compile "commons-dbcp:commons-dbcp:1.4"
-	compile "com.google.code.gson:gson:$gsonVersion"
-	compile "com.amazonaws:aws-java-sdk:$awsJavaSdkVersion"
-	
+	// Spring
 	compile "org.springframework:spring-context-support:$springVersion"
 	compile "org.springframework:spring-tx:$springVersion"
 	compile "org.springframework:spring-jdbc:$springVersion"
 	compile "org.springframework:spring-webmvc:$springVersion"
 	
+	// Other
+	compile "mysql:mysql-connector-java:$mysqlVersion"
+	compile "com.google.guava:guava:$guavaVersion"
+	compile "commons-dbcp:commons-dbcp:1.4"
+	compile "com.google.code.gson:gson:$gsonVersion"
+	compile "com.amazonaws:aws-java-sdk:$awsJavaSdkVersion"
 	compile "org.quartz-scheduler:quartz:2.2.0"
 
 	// Servlet API
 	providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
 	jettyServer "org.eclipse.jetty:jetty-server:$jettyVersion"
 	jettyServer "org.eclipse.jetty:jetty-ant:$jettyVersion"
-
+	
+	// Testing
 	testCompile "junit:junit:$junitVersion"
+	testCompile "org.mockito:mockito-core:$mockitoCoreVersion"
+	testCompile "org.springframework:spring-test:$springVersion"
 }
 
 // ======== WAR ========
