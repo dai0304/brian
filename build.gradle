@@ -193,4 +193,7 @@ license {
 	ext.year = Calendar.getInstance().get(Calendar.YEAR)
 	header rootProject.file('copyright/HEADER')
 	strictCheck true
+	mapping {
+		java = 'SLASHSTAR_STYLE'
+	}
 }
