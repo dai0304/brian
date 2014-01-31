@@ -1,15 +1,34 @@
-package jp.classmethod.aws.brian;
+/*
+ * Copyright 2013-2014 Classmethod, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package jp.classmethod.aws.brian.job;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TimeZone;
+
+import jp.classmethod.aws.brian.model.BrianMessage;
 
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.quartz.Trigger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.quartz.QuartzJobBean;
@@ -32,7 +51,7 @@ public class BrianQuartzJobBean extends QuartzJobBean {
 	 * @return {@link SimpleDateFormat}
 	 * @since 1.0.0
 	 */
-	public static SimpleDateFormat createFormat() {
+	static SimpleDateFormat createFormat() {
 		SimpleDateFormat format = new SimpleDateFormat(DATE_FORMAT);
 		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Japan")); // TODO localize
 		calendar.setMinimalDaysInFirstWeek(4);
@@ -42,6 +61,13 @@ public class BrianQuartzJobBean extends QuartzJobBean {
 		return format;
 	}
 	
+	static String toString(Date date) {
+		if (date == null) {
+			return null;
+		}
+		return createFormat().format(date);
+	}
+
 	/**
 	 * Returns a string representation of this map.  The string representation
 	 * consists of a list of key-value mappings in the order returned by the
@@ -54,7 +80,7 @@ public class BrianQuartzJobBean extends QuartzJobBean {
 	 *
 	 * @return a string representation of this map
 	 */
-	private static String toString(JobDataMap jdm) {
+	static String toString(JobDataMap jdm) {
 		Iterator<Map.Entry<String, Object>> i = jdm.entrySet().iterator();
 		if (!i.hasNext()) {
 			return "{}";
@@ -84,19 +110,30 @@ public class BrianQuartzJobBean extends QuartzJobBean {
 
 	@Override
 	protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
-		SimpleDateFormat sdf = createFormat();
-		
-		JobDetail jobDetail = context.getJobDetail();
-		
 		try {
-			logger.info("======== Quartz trigger firing with Spring Batch jobName = {}", jobDetail.getKey().getName());
-			logger.info(" scheduledFireTime = {}", sdf.format(context.getScheduledFireTime()));
-			logger.info("          fireTime = {}", sdf.format(context.getFireTime()));
-			logger.info("      nextFireTime = {}", sdf.format(context.getNextFireTime()));
-			logger.info(" previouseFireTime = {}",
-					context.getPreviousFireTime() == null ? null : sdf.format(context.getPreviousFireTime()));
+			JobDetail jobDetail = context.getJobDetail();
+			Trigger trigger = context.getTrigger();
+			BrianMessage message = new BrianMessage(context);
+			String json = gson.toJson(message);
+			
+			logger.info(">>> ======== Quartz job executed by firing {} with job = {}", trigger.getKey(), jobDetail.getKey());
+			logger.info(" scheduledFireTime = {}", toString(context.getScheduledFireTime()));
+			logger.info("          fireTime = {}", toString(context.getFireTime()));
+			logger.info("      nextFireTime = {}", toString(context.getNextFireTime()));
+			logger.info(" previouseFireTime = {}", toString(context.getPreviousFireTime()));
 			logger.info("       refireCount = {}", context.getRefireCount());
+			logger.info("    fireInstanceId = {}", context.getFireInstanceId());
 			logger.info("  mergedJobDataMap = {}", toString(context.getMergedJobDataMap()));
+			
+			logger.info("-------- Quartz trigger");
+			logger.info("               key = {}", trigger.getKey());
+			logger.info("              desc = {}", trigger.getDescription());
+			logger.info("         startTime = {}", trigger.getStartTime());
+			logger.info("           endTime = {}", trigger.getEndTime());
+			logger.info("     finalFireTime = {}", trigger.getFinalFireTime());
+			logger.info("misfireInstruction = {}", trigger.getMisfireInstruction());
+			logger.info("          priority = {}", trigger.getPriority());
+			logger.info("        jobDataMap = {}", toString(trigger.getJobDataMap()));
 			
 			logger.info("-------- Quartz jobDetail");
 			logger.info("               key = {}", jobDetail.getKey());
@@ -104,16 +141,15 @@ public class BrianQuartzJobBean extends QuartzJobBean {
 			logger.info("          jobClass = {}", jobDetail.getJobClass());
 			logger.info("        jobDataMap = {}", toString(jobDetail.getJobDataMap()));
 			
-			String json = gson.toJson(context);
-			logger.info("-------- Message");
+			logger.info("-------- Brian Message");
 			logger.info(json);
 			
 			sns.publish(topicArn, json);
 			
-			logger.info("======== Job Finished");
+			logger.info("<<< ======== Job Finished");
 		} catch (Exception e) {
 			logger.error("Failed execute job.", e);
-			logger.info("======== Job Failed");
+			logger.info("<<< ======== Job Failed");
 			throw new JobExecutionException(e);
 		}
 	}

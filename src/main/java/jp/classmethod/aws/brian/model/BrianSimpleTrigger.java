@@ -13,12 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.classmethod.aws.brian.web;
+package jp.classmethod.aws.brian.model;
 
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.http.HttpStatus;
+import org.quartz.SimpleTrigger;
 
-@SuppressWarnings("serial")
-@ResponseStatus(HttpStatus.NOT_FOUND)
-public class ResourceNotFoundException extends RuntimeException {
+class BrianSimpleTrigger extends BrianTrigger {
+	
+	private long repeatInterval;
+	
+	private int repeatCount;
+	
+	
+	BrianSimpleTrigger(SimpleTrigger trigger) {
+		super(trigger);
+		repeatInterval = trigger.getRepeatInterval();
+		repeatCount = trigger.getRepeatCount();
+	}
+	
+	public long getRepeatInterval() {
+		return repeatInterval;
+	}
+	
+	public int getRepeatCount() {
+		return repeatCount;
+	}
 }

@@ -13,12 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.classmethod.aws.brian.web;
+package jp.classmethod.aws.brian.model;
 
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.http.HttpStatus;
+import java.util.TimeZone;
 
-@SuppressWarnings("serial")
-@ResponseStatus(HttpStatus.NOT_FOUND)
-public class ResourceNotFoundException extends RuntimeException {
+import org.quartz.CronTrigger;
+
+class BrianCronTrigger extends BrianTrigger {
+	
+	private final TimeZone timeZone;
+	
+	private final String cronExpression;
+	
+	
+	BrianCronTrigger(CronTrigger trigger) {
+		super(trigger);
+		timeZone = trigger.getTimeZone();
+		cronExpression = trigger.getCronExpression();
+	}
+	
+	public TimeZone getTimeZone() {
+		return timeZone;
+	}
+	
+	public String getCronExpression() {
+		return cronExpression;
+	}
 }

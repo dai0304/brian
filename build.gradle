@@ -1,26 +1,28 @@
 buildscript {
 	repositories.mavenCentral()
-	dependencies.classpath 'org.hibernate.build.gradle:version-injection-plugin:1.0.0'
+	dependencies {
+		classpath 'org.hibernate.build.gradle:version-injection-plugin:1.0.0'
+		classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.7.0'
+	}
 }
 
 apply plugin: 'java'
 apply plugin: 'war'
 apply plugin: 'eclipse'
 apply plugin: 'version-injection'
+apply plugin: 'license'
 
+defaultTasks 'clean', 'build'
 
 // ======== Generic ========
 group = 'jp.classmethod.aws'
-ext.artifactId = 'brian'
-version = '0.1'
-
-task wrapper(type: Wrapper) {
-	gradleVersion = '1.8'
+version = '0.2'
+ext {
+	artifactId = 'brian'
+	defaultEncoding = 'UTF-8'
 }
 
-
 // ======== Java ========
-ext.defaultEncoding = 'UTF-8'
 sourceCompatibility = targetCompatibility = 1.7
 tasks.withType(AbstractCompile) each {
 	it.options.encoding = ext.defaultEncoding
@@ -56,14 +58,12 @@ test {
 	}
 }
 
-// ソースバンドル・Javadocバンドルの作成
-
+// version injection
 versionInjection {
 	into('jp.classmethod.aws.brian.Version', 'getVersionString')
 }
 
-// ソースバンドル・Javadocバンドルの作成
-
+// create source and javadoc bundles
 task sourcesJar(type: Jar, dependsOn: classes) {
 	classifier = 'sources'
 	from sourceSets.main.allSource
@@ -95,34 +95,38 @@ configurations {
 }
 
 dependencies {
+	// Logging
 	compile "org.slf4j:slf4j-api:$slf4jVersion"
 	compile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
 	compile "org.slf4j:log4j-over-slf4j:$slf4jVersion"
 	compile "ch.qos.logback:logback-classic:$logbackVersion"
-
 	compile ('org.lazyluke:log4jdbc-remix:0.2.7') {
 		exclude group: 'org.slf4j', module: 'slf4j-log4j12'
 	}
 	
-	compile "mysql:mysql-connector-java:$mysqlVersion"
-	compile "com.google.guava:guava:$guavaVersion"
-	compile "commons-dbcp:commons-dbcp:1.4"
-	compile "com.google.code.gson:gson:$gsonVersion"
-	compile "com.amazonaws:aws-java-sdk:$awsJavaSdkVersion"
-	
+	// Spring
 	compile "org.springframework:spring-context-support:$springVersion"
 	compile "org.springframework:spring-tx:$springVersion"
 	compile "org.springframework:spring-jdbc:$springVersion"
 	compile "org.springframework:spring-webmvc:$springVersion"
 	
+	// Other
+	compile "mysql:mysql-connector-java:$mysqlVersion"
+	compile "com.google.guava:guava:$guavaVersion"
+	compile "commons-dbcp:commons-dbcp:1.4"
+	compile "com.google.code.gson:gson:$gsonVersion"
+	compile "com.amazonaws:aws-java-sdk:$awsJavaSdkVersion"
 	compile "org.quartz-scheduler:quartz:2.2.0"
 
 	// Servlet API
 	providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
 	jettyServer "org.eclipse.jetty:jetty-server:$jettyVersion"
 	jettyServer "org.eclipse.jetty:jetty-ant:$jettyVersion"
-
+	
+	// Testing
 	testCompile "junit:junit:$junitVersion"
+	testCompile "org.mockito:mockito-core:$mockitoCoreVersion"
+	testCompile "org.springframework:spring-test:$springVersion"
 }
 
 // ======== WAR ========
@@ -141,7 +145,6 @@ task setSystemProperties << {
 	System.setProperty 'PARAM1', PARAM1
 	System.setProperty 'PARAM2', PARAM2
 	System.setProperty 'PARAM3', PARAM3
-	System.setProperty 'PARAM4', PARAM4
 	System.setProperty 'aws.accessKeyId', awsAccessKey
 	System.setProperty 'aws.secretKey', awsSecretKey
 	System.setProperty 'spring.profiles.active', springProfilesActive
@@ -183,3 +186,18 @@ clean {
 	delete << 'src/main/webapp/WEB-INF/classes'
 }
 
+
+// ======== wrapper ========
+task wrapper(type: Wrapper) {
+	gradleVersion = '1.8'
+}
+
+// ======== License =======
+license {
+	ext.year = Calendar.getInstance().get(Calendar.YEAR)
+	header rootProject.file('copyright/HEADER')
+	strictCheck true
+	mapping {
+		java = 'SLASHSTAR_STYLE'
+	}
+}
