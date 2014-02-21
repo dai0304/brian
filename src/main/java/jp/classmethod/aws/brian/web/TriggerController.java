@@ -186,18 +186,22 @@ public class TriggerController {
 			Trigger trigger = tb.build();
 			
 			Date nextFireTime;
+			HttpStatus status;
 			if (scheduler.checkExists(triggerKey)) {
 				nextFireTime = scheduler.rescheduleJob(triggerKey, trigger);
+				status = HttpStatus.OK;
 				logger.info("rescheduled {}", triggerKey);
 			} else {
 				nextFireTime = scheduler.scheduleJob(trigger);
+				status = HttpStatus.CREATED;
 				logger.info("scheduled {}", triggerKey);
 			}
 			
 			Map<String, Object> map = new HashMap<>();
 			map.put("nextFireTime", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).format(nextFireTime));
-			return new ResponseEntity<>(map, HttpStatus.CREATED);
+			return new ResponseEntity<>(map, status);
 		} catch (ParseException e) {
+			logger.error("parse cron expression failed", e);
 			Map<String, Object> map = new HashMap<>();
 			return new ResponseEntity<>(map, HttpStatus.BAD_REQUEST);
 		}
