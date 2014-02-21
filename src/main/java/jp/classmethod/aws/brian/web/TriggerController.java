@@ -194,7 +194,7 @@ public class TriggerController {
 			@PathVariable("triggerGroupName") String triggerGroupName,
 			@PathVariable("triggerName") String triggerName,
 			@RequestBody BrianTriggerRequest triggerRequest)
-			throws SchedulerException, ParseException {
+			throws SchedulerException {
 		logger.info("putTrigger {}.{}", triggerGroupName, triggerName);
 		logger.info("{}", triggerRequest);
 		
@@ -241,8 +241,9 @@ public class TriggerController {
 			map.put("nextFireTime", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).format(nextFireTime));
 			return new ResponseEntity<>(map, status);
 		} catch (ParseException e) {
-			logger.error("parse cron expression failed", e);
+			logger.warn("parse cron expression failed", e);
 			Map<String, Object> map = new HashMap<>();
+			map.put("message", "parse cron expression failed - " + e.getMessage());
 			return new ResponseEntity<>(map, HttpStatus.BAD_REQUEST);
 		}
 	}
