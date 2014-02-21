@@ -36,7 +36,6 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
 import com.amazonaws.services.sns.AmazonSNS;
 import com.google.gson.Gson;
 
-
 public class BrianQuartzJobBean extends QuartzJobBean {
 	
 	private static Logger logger = LoggerFactory.getLogger(BrianQuartzJobBean.class);
@@ -45,12 +44,6 @@ public class BrianQuartzJobBean extends QuartzJobBean {
 	public static final String DATE_FORMAT = "yyyy/MM/dd HH:mm:ss.SSS zzz";
 	
 	
-	/**
-	 * ログ用の {@link SimpleDateFormat} を新規に生成する。
-	 * 
-	 * @return {@link SimpleDateFormat}
-	 * @since 1.0.0
-	 */
 	static SimpleDateFormat createFormat() {
 		SimpleDateFormat format = new SimpleDateFormat(DATE_FORMAT);
 		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Japan")); // TODO localize

@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * HTTPエラー用コントローラ実装クラス。
+ * Controller implementation for HTTP Error handling.
  * 
  * @since 1.0
  * @author daisuke

@@ -61,7 +61,7 @@ import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 
 /**
- * TODO
+ * Controller implementation to operate trigger groups and triggers.
  * 
  * @since 1.0
  * @author daisuke
@@ -83,6 +83,12 @@ public class TriggerController {
 	JobDetail quartzJob;
 	
 	
+	/**
+	 * Get trigger groups.
+	 * 
+	 * @return trigger groups
+	 * @throws SchedulerException
+	 */
 	@ResponseBody
 	@RequestMapping(value = "/triggers", method = RequestMethod.GET)
 	public Map<String, Object> getTriggerGroups() throws SchedulerException {
@@ -95,6 +101,13 @@ public class TriggerController {
 		return map;
 	}
 	
+	/**
+	 * Get trigger names in the specified group.
+	 * 
+	 * @param triggerGroupName groupName
+	 * @return trigger names
+	 * @throws SchedulerException
+	 */
 	@ResponseBody
 	@RequestMapping(value = "/triggers/{triggerGroupName}", method = RequestMethod.GET)
 	public Map<String, Object> getTriggerNames(@PathVariable("triggerGroupName") String triggerGroupName)
@@ -115,6 +128,15 @@ public class TriggerController {
 		return map;
 	}
 	
+	/**
+	 * Get trigger information for the specified trigger.
+	 * 
+	 * @param triggerGroupName trigger group name
+	 * @param triggerName trigger name
+	 * @return trigger information
+	 * @throws SchedulerException
+	 * @throws ResourceNotFoundException
+	 */
 	@ResponseBody
 	@RequestMapping(value = "/triggers/{triggerGroupName}/{triggerName}", method = RequestMethod.GET, produces = "application/json")
 	public String getTrigger(
@@ -132,6 +154,14 @@ public class TriggerController {
 		return gson.toJson(trigger);
 	}
 	
+	/**
+	 * Delete specified trigger.
+	 * 
+	 * @param triggerGroupName trigger group name
+	 * @param triggerName trigger name
+	 * @return wherther the trigger is removed
+	 * @throws SchedulerException
+	 */
 	@ResponseBody
 	@RequestMapping(value = "/triggers/{triggerGroupName}/{triggerName}", method = RequestMethod.DELETE)
 	public Map<String, Object> deleteTrigger(
@@ -148,6 +178,16 @@ public class TriggerController {
 		return map;
 	}
 	
+	/**
+	 * Create or update the trigger.
+	 * 
+	 * @param triggerGroupName trigger group name
+	 * @param triggerName trigger name
+	 * @param triggerRequest triggerRequest
+	 * @return {@link HttpStatus#CREATED} if the trigger is created, {@link HttpStatus#OK} if the trigger is updated.
+	 *   And nextFireTime property which is represent that the trigger's next fire time.
+	 * @throws SchedulerException
+	 */
 	@ResponseBody
 	@RequestMapping(value = "/triggers/{triggerGroupName}/{triggerName}", method = RequestMethod.PUT)
 	public ResponseEntity<Map<String, Object>> putTrigger(

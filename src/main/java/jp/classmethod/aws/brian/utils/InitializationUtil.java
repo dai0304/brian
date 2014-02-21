@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * TODO for daisuke
+ * Utiliti class to print all system properties.
  * 
  * @since 1.0
  * @version $Id$
