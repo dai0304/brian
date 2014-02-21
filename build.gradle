@@ -140,6 +140,9 @@ ext {
 
 task setSystemProperties << {
 	assert project.hasProperty('JDBC_CONNECTION_STRING'): "JDBC_CONNECTION_STRING is required"
+	assert project.hasProperty('PARAM1'): "PARAM1 is required"
+	assert project.hasProperty('PARAM2'): "PARAM2 is required"
+	assert project.hasProperty('PARAM3'): "PARAM3 is required"
 	
 	System.setProperty 'JDBC_CONNECTION_STRING', JDBC_CONNECTION_STRING
 	System.setProperty 'PARAM1', PARAM1
@@ -147,8 +150,13 @@ task setSystemProperties << {
 	System.setProperty 'PARAM3', PARAM3
 	System.setProperty 'aws.accessKeyId', awsAccessKey
 	System.setProperty 'aws.secretKey', awsSecretKey
-	System.setProperty 'spring.profiles.active', springProfilesActive
-	if (project.hasProperty('logbackConfigurationFile')) System.setProperty 'logback.configurationFile', logbackConfigurationFile
+	
+	if (project.hasProperty('springProfilesActive')) {
+		System.setProperty 'spring.profiles.active', springProfilesActive
+	}
+	if (project.hasProperty('logbackConfigurationFile')) {
+		System.setProperty 'logback.configurationFile', logbackConfigurationFile
+	}
 }
 
 ant {
