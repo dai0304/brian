@@ -41,10 +41,6 @@ public class BrianQuartzJobBeanTest {
 	BrianQuartzJobBean sut;
 	
 	
-	@Before
-	public void setUp() throws Exception {
-	}
-	
 	@Test
 	public void testname() throws Exception {
 		// Setup
