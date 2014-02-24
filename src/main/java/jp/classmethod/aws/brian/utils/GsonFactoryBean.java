@@ -75,6 +75,7 @@ class DateSerializer implements JsonSerializer<Date> {
 	@Override
 	public JsonElement serialize(Date src, Type typeOfSrc, JsonSerializationContext context) {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
+		sdf.setTimeZone(TimeZone.getTimeZone("Universal"));
 		return new JsonPrimitive(sdf.format(src));
 	}
 }
