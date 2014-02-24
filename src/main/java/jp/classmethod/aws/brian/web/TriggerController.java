@@ -284,22 +284,22 @@ public class TriggerController {
 	}
 	
 	private SimpleScheduleBuilder createSimpleSchedule(BrianTriggerRequest triggerRequest) {
-		long interval;
+		long repeatInterval;
 		int repeatCount;
 		try {
-			interval = Long.valueOf(triggerRequest.getRest().get("interval"));
+			repeatInterval = Long.valueOf(triggerRequest.getRest().get("repeatInterval"));
 			try {
 				repeatCount = Integer.valueOf(triggerRequest.getRest().get("repeatCount"));
 			} catch (NumberFormatException e) {
 				repeatCount = SimpleTrigger.REPEAT_INDEFINITELY;
 			}
 		} catch (NumberFormatException e) {
-			interval = 0;
+			repeatInterval = 0;
 			repeatCount = 1;
 		}
 		
 		SimpleScheduleBuilder simpleSchedule = SimpleScheduleBuilder.simpleSchedule()
-			.withIntervalInMilliseconds(interval)
+			.withIntervalInMilliseconds(repeatInterval)
 			.withRepeatCount(repeatCount);
 		
 		if (triggerRequest.getMisfireInstruction() != null) {
