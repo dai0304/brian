@@ -1,0 +1,10 @@
+{
+  "description": "Sample trigger request - 3 times",
+  "scheduleType": "simple",
+  "misfireInstruction": "IGNORE",
+  "repeatInterval": 10000,
+  "repeatCount": 2,
+  "jobData": {
+    "batchJobName": "3times"
+  }
+}

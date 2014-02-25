@@ -1,0 +1,22 @@
+{
+  "brianVersion": "0.3",
+  "fireTime": "2014-02-21T14:26:20Z",
+  "scheduledFireTime": "2014-02-21T14:26:20Z",
+  "nextFireTime": "2014-02-21T14:26:40Z",
+  "refireCount": 0,
+  "recovering": false,
+  "fireInstanceId": "LOCAL_1392992370249",
+  "trigger": {
+    "timeZone": "Universal",
+    "cronExpression": "*/20 * * * * ?",
+    "group": "DEFAULT",
+    "name": "foo",
+    "misfireInstruction": 2,
+    "description": "Sample trigger request - fire every 20 seconds.",
+    "startTime": "2014-02-21T14:26:02Z",
+    "endTime": "2014-02-21T18:21:00Z"
+  },
+  "jobData": {
+    "batchJobName": "testEvery20sec"
+  }
+}
