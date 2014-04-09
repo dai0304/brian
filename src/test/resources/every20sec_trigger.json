@@ -1,0 +1,11 @@
+{
+  "description": "Sample trigger request - fire every 20 seconds.",
+  "scheduleType": "cron",
+  "misfireInstruction": "DO_NOTHING",
+  "cronEx": "*/20 * * * * ?",
+  "timeZone": "Universal",
+  "endAt": "2014-02-21T18:21:00Z",
+  "jobData": {
+    "batchJobName": "testEvery20sec"
+  }
+}

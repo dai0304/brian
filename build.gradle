@@ -16,7 +16,7 @@ defaultTasks 'clean', 'build'
 
 // ======== Generic ========
 group = 'jp.classmethod.aws'
-version = '0.2'
+version = '0.3'
 ext {
 	artifactId = 'brian'
 	defaultEncoding = 'UTF-8'
@@ -36,13 +36,12 @@ ext {
 	slf4jVersion = "1.7.2"
 	logbackVersion = "1.0.11"
 	
-	// spring framework
 	springVersion = "3.2.4.RELEASE"
-
 	mysqlVersion = "5.1.22"
 	guavaVersion = "15.0"
 	gsonVersion = "2.2.2"
-	awsJavaSdkVersion = "1.6.8"
+	baseunitsVersion = "2.11"
+	awsJavaSdkVersion = "1.7.1"
 	jettyVersion = '9.0.4.v20130625'
 }
 
@@ -88,6 +87,10 @@ repositories {
 		// for log4jdbc-remix
 		url "https://oss.sonatype.org/content/repositories/releases"
 	}
+	maven {
+		// for baseunits
+		url "http://maven.xet.jp/release"
+	}
 }
 
 configurations {
@@ -117,7 +120,8 @@ dependencies {
 	compile "com.google.code.gson:gson:$gsonVersion"
 	compile "com.amazonaws:aws-java-sdk:$awsJavaSdkVersion"
 	compile "org.quartz-scheduler:quartz:2.2.0"
-
+	compile "jp.xet:baseunits:$baseunitsVersion"
+	
 	// Servlet API
 	providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
 	jettyServer "org.eclipse.jetty:jetty-server:$jettyVersion"
@@ -140,6 +144,9 @@ ext {
 
 task setSystemProperties << {
 	assert project.hasProperty('JDBC_CONNECTION_STRING'): "JDBC_CONNECTION_STRING is required"
+	assert project.hasProperty('PARAM1'): "PARAM1 is required"
+	assert project.hasProperty('PARAM2'): "PARAM2 is required"
+	assert project.hasProperty('PARAM3'): "PARAM3 is required"
 	
 	System.setProperty 'JDBC_CONNECTION_STRING', JDBC_CONNECTION_STRING
 	System.setProperty 'PARAM1', PARAM1
@@ -147,8 +154,13 @@ task setSystemProperties << {
 	System.setProperty 'PARAM3', PARAM3
 	System.setProperty 'aws.accessKeyId', awsAccessKey
 	System.setProperty 'aws.secretKey', awsSecretKey
-	System.setProperty 'spring.profiles.active', springProfilesActive
-	if (project.hasProperty('logbackConfigurationFile')) System.setProperty 'logback.configurationFile', logbackConfigurationFile
+	
+	if (project.hasProperty('springProfilesActive')) {
+		System.setProperty 'spring.profiles.active', springProfilesActive
+	}
+	if (project.hasProperty('logbackConfigurationFile')) {
+		System.setProperty 'logback.configurationFile', logbackConfigurationFile
+	}
 }
 
 ant {

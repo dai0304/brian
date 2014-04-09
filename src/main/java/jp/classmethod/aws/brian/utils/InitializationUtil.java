@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * TODO for daisuke
+ * Utiliti class to print all system properties.
  * 
  * @since 1.0
  * @version $Id$
@@ -37,7 +37,8 @@ public class InitializationUtil {
 		logger.info("======== System Properties ========");
 		Map<Object, Object> sortedProps = new TreeMap<>(System.getProperties());
 		for (Map.Entry<Object, Object> e : sortedProps.entrySet()) {
-			logger.info("{} = {}", e.getKey(), e.getValue());
+			String key = e.getKey().toString();
+			logger.info("{} = {}", key, key.toLowerCase().contains("secret") ? "********" : e.getValue());
 		}
 		logger.info("===================================");
 	}

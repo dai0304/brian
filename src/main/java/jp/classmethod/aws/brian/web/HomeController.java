@@ -15,12 +15,16 @@
  */
 package jp.classmethod.aws.brian.web;
 
+import org.quartz.Scheduler;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
- * {@code /} や {@code /healthcheck} に対して{@code ok}を返すだけのコントローラ実装クラス。
+ * Controller implementation for {@code /} や {@code /healthcheck}.
+ * 
+ * <p>These endpoints respond simply {@code "ok"}.</p>
  * 
  * @since 1.0
  * @author daisuke

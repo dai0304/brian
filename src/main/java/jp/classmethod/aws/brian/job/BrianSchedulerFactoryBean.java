@@ -42,6 +42,7 @@ public class BrianSchedulerFactoryBean extends SchedulerFactoryBean {
 			scheduler.addJob(quartzJob, true, false);
 		} catch (SchedulerException e) {
 			logger.error("Adding job to the scheduler is failed", e);
+			throw e;
 		}
 	}
 }

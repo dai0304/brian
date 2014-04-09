@@ -27,7 +27,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
+import jp.classmethod.aws.brian.model.BrianMessage;
 import jp.classmethod.aws.brian.model.BrianTriggerRequest;
+import jp.classmethod.aws.brian.model.ManualBrianTrigger;
+import jp.xet.baseunits.timeutil.Clock;
 
 import org.quartz.CronExpression;
 import org.quartz.CronScheduleBuilder;
@@ -46,6 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -55,13 +59,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.amazonaws.services.sns.AmazonSNS;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 
 /**
- * TODO
+ * Controller implementation to operate trigger groups and triggers.
  * 
  * @since 1.0
  * @author daisuke
@@ -82,7 +87,18 @@ public class TriggerController {
 	@Qualifier("brianQuartzJob")
 	JobDetail quartzJob;
 	
+	@Autowired
+	AmazonSNS sns;
 	
+	@Value("#{systemProperties['PARAM3']}")
+	String topicArn;
+	
+	/**
+	 * Get trigger groups.
+	 * 
+	 * @return trigger groups
+	 * @throws SchedulerException
+	 */
 	@ResponseBody
 	@RequestMapping(value = "/triggers", method = RequestMethod.GET)
 	public Map<String, Object> getTriggerGroups() throws SchedulerException {
@@ -95,6 +111,13 @@ public class TriggerController {
 		return map;
 	}
 	
+	/**
+	 * Get trigger names in the specified group.
+	 * 
+	 * @param triggerGroupName groupName
+	 * @return trigger names
+	 * @throws SchedulerException
+	 */
 	@ResponseBody
 	@RequestMapping(value = "/triggers/{triggerGroupName}", method = RequestMethod.GET)
 	public Map<String, Object> getTriggerNames(@PathVariable("triggerGroupName") String triggerGroupName)
@@ -115,6 +138,15 @@ public class TriggerController {
 		return map;
 	}
 	
+	/**
+	 * Get trigger information for the specified trigger.
+	 * 
+	 * @param triggerGroupName trigger group name
+	 * @param triggerName trigger name
+	 * @return trigger information
+	 * @throws SchedulerException
+	 * @throws ResourceNotFoundException
+	 */
 	@ResponseBody
 	@RequestMapping(value = "/triggers/{triggerGroupName}/{triggerName}", method = RequestMethod.GET, produces = "application/json")
 	public String getTrigger(
@@ -132,6 +164,14 @@ public class TriggerController {
 		return gson.toJson(trigger);
 	}
 	
+	/**
+	 * Delete specified trigger.
+	 * 
+	 * @param triggerGroupName trigger group name
+	 * @param triggerName trigger name
+	 * @return wherther the trigger is removed
+	 * @throws SchedulerException
+	 */
 	@ResponseBody
 	@RequestMapping(value = "/triggers/{triggerGroupName}/{triggerName}", method = RequestMethod.DELETE)
 	public Map<String, Object> deleteTrigger(
@@ -148,13 +188,23 @@ public class TriggerController {
 		return map;
 	}
 	
+	/**
+	 * Create or update the trigger.
+	 * 
+	 * @param triggerGroupName trigger group name
+	 * @param triggerName trigger name
+	 * @param triggerRequest triggerRequest
+	 * @return {@link HttpStatus#CREATED} if the trigger is created, {@link HttpStatus#OK} if the trigger is updated.
+	 *   And nextFireTime property which is represent that the trigger's next fire time.
+	 * @throws SchedulerException
+	 */
 	@ResponseBody
 	@RequestMapping(value = "/triggers/{triggerGroupName}/{triggerName}", method = RequestMethod.PUT)
 	public ResponseEntity<Map<String, Object>> putTrigger(
 			@PathVariable("triggerGroupName") String triggerGroupName,
 			@PathVariable("triggerName") String triggerName,
 			@RequestBody BrianTriggerRequest triggerRequest)
-			throws SchedulerException, ParseException {
+			throws SchedulerException {
 		logger.info("putTrigger {}.{}", triggerGroupName, triggerName);
 		logger.info("{}", triggerRequest);
 		
@@ -186,21 +236,45 @@ public class TriggerController {
 			Trigger trigger = tb.build();
 			
 			Date nextFireTime;
+			HttpStatus status;
 			if (scheduler.checkExists(triggerKey)) {
 				nextFireTime = scheduler.rescheduleJob(triggerKey, trigger);
+				status = HttpStatus.OK;
 				logger.info("rescheduled {}", triggerKey);
 			} else {
 				nextFireTime = scheduler.scheduleJob(trigger);
+				status = HttpStatus.CREATED;
 				logger.info("scheduled {}", triggerKey);
 			}
 			
 			Map<String, Object> map = new HashMap<>();
 			map.put("nextFireTime", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).format(nextFireTime));
-			return new ResponseEntity<>(map, HttpStatus.CREATED);
+			return new ResponseEntity<>(map, status);
 		} catch (ParseException e) {
+			logger.warn("parse cron expression failed", e);
 			Map<String, Object> map = new HashMap<>();
+			map.put("message", "parse cron expression failed - " + e.getMessage());
 			return new ResponseEntity<>(map, HttpStatus.BAD_REQUEST);
 		}
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/triggers/{triggerGroupName}/{triggerName}", method = RequestMethod.POST)
+	public ResponseEntity<Map<String, Object>> forceFireTrigger(
+			@PathVariable("triggerGroupName") String triggerGroupName,
+			@PathVariable("triggerName") String triggerName,
+			@RequestBody BrianTriggerRequest triggerRequest)
+			throws SchedulerException {
+		
+		BrianMessage message = new BrianMessage(Clock.now().asJavaUtilDate(), "FII", new ManualBrianTrigger(triggerName, triggerGroupName), null);
+		String json = gson.toJson(message);
+		logger.info("-------- Brian Message");
+		logger.info(json);
+		
+		sns.publish(topicArn, json);
+		
+		Map<String, Object> map = new HashMap<>();
+		return new ResponseEntity<>(map, HttpStatus.OK);
 	}
 	
 	private ScheduleBuilder<? extends Trigger> getSchedule(BrianTriggerRequest triggerRequest) throws ParseException {
@@ -239,22 +313,22 @@ public class TriggerController {
 	}
 	
 	private SimpleScheduleBuilder createSimpleSchedule(BrianTriggerRequest triggerRequest) {
-		long interval;
+		long repeatInterval;
 		int repeatCount;
 		try {
-			interval = Long.valueOf(triggerRequest.getRest().get("interval"));
+			repeatInterval = Long.valueOf(triggerRequest.getRest().get("repeatInterval"));
 			try {
 				repeatCount = Integer.valueOf(triggerRequest.getRest().get("repeatCount"));
 			} catch (NumberFormatException e) {
 				repeatCount = SimpleTrigger.REPEAT_INDEFINITELY;
 			}
 		} catch (NumberFormatException e) {
-			interval = 0;
+			repeatInterval = 0;
 			repeatCount = 1;
 		}
 		
 		SimpleScheduleBuilder simpleSchedule = SimpleScheduleBuilder.simpleSchedule()
-			.withIntervalInMilliseconds(interval)
+			.withIntervalInMilliseconds(repeatInterval)
 			.withRepeatCount(repeatCount);
 		
 		if (triggerRequest.getMisfireInstruction() != null) {

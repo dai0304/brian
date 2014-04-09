@@ -43,7 +43,7 @@
     <property name="quartzProperties">
       <props>
         <prop key="org.quartz.scheduler.instanceName">BrianScheduler</prop>
-        <prop key="org.quartz.scheduler.instanceId">#{instanceMetadata.instanceId}</prop>
+        <prop key="org.quartz.scheduler.instanceId">#{instanceMetadata.instanceId}_</prop>
         <prop key="org.quartz.jobStore.misfireThreshold">86400000</prop><!-- 24hr = 86400000ms -->
         <prop key="org.quartz.jobStore.class">org.quartz.impl.jdbcjobstore.JobStoreTX</prop>
         <prop key="org.quartz.jobStore.driverDelegateClass">org.quartz.impl.jdbcjobstore.StdJDBCDelegate</prop>
