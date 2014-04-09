@@ -27,7 +27,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
+import jp.classmethod.aws.brian.model.BrianMessage;
 import jp.classmethod.aws.brian.model.BrianTriggerRequest;
+import jp.classmethod.aws.brian.model.ManualBrianTrigger;
+import jp.xet.baseunits.timeutil.Clock;
 
 import org.quartz.CronExpression;
 import org.quartz.CronScheduleBuilder;
@@ -46,6 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -55,6 +59,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.amazonaws.services.sns.AmazonSNS;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -82,6 +87,11 @@ public class TriggerController {
 	@Qualifier("brianQuartzJob")
 	JobDetail quartzJob;
 	
+	@Autowired
+	AmazonSNS sns;
+	
+	@Value("#{systemProperties['PARAM3']}")
+	String topicArn;
 	
 	/**
 	 * Get trigger groups.
@@ -246,6 +256,25 @@ public class TriggerController {
 			map.put("message", "parse cron expression failed - " + e.getMessage());
 			return new ResponseEntity<>(map, HttpStatus.BAD_REQUEST);
 		}
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/triggers/{triggerGroupName}/{triggerName}", method = RequestMethod.POST)
+	public ResponseEntity<Map<String, Object>> forceFireTrigger(
+			@PathVariable("triggerGroupName") String triggerGroupName,
+			@PathVariable("triggerName") String triggerName,
+			@RequestBody BrianTriggerRequest triggerRequest)
+			throws SchedulerException {
+		
+		BrianMessage message = new BrianMessage(Clock.now().asJavaUtilDate(), "FII", new ManualBrianTrigger(triggerName, triggerGroupName), null);
+		String json = gson.toJson(message);
+		logger.info("-------- Brian Message");
+		logger.info(json);
+		
+		sns.publish(topicArn, json);
+		
+		Map<String, Object> map = new HashMap<>();
+		return new ResponseEntity<>(map, HttpStatus.OK);
 	}
 	
 	private ScheduleBuilder<? extends Trigger> getSchedule(BrianTriggerRequest triggerRequest) throws ParseException {

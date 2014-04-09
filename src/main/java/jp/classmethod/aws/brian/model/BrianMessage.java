@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import jp.classmethod.aws.brian.Version;
+import jp.xet.baseunits.timeutil.Clock;
 
 import org.quartz.JobExecutionContext;
 
@@ -57,6 +58,26 @@ public class BrianMessage {
 		fireInstanceId = context.getFireInstanceId();
 		jobData = new LinkedHashMap<>(context.getMergedJobDataMap());
 	}
+	
+	
+
+	public BrianMessage(Date fireTime, Date scheduledFireTime, Date prevFireTime, Date nextFireTime, int refireCount,
+			boolean recovering, String fireInstanceId, BrianTrigger trigger, Map<String, Object> jobData) {
+		this.fireTime = fireTime;
+		this.scheduledFireTime = scheduledFireTime;
+		this.prevFireTime = prevFireTime;
+		this.nextFireTime = nextFireTime;
+		this.refireCount = refireCount;
+		this.recovering = recovering;
+		this.fireInstanceId = fireInstanceId;
+		this.trigger = trigger;
+		this.jobData = jobData;
+	}
+
+	public BrianMessage(Date scheduledFireTime, String fireInstanceId, BrianTrigger trigger, Map<String, Object> jobData) {
+		this(Clock.now().asJavaUtilDate(), scheduledFireTime, null, null, 0, false, fireInstanceId, trigger, jobData);
+	}
+
 
 	public String getBrianVersion() {
 		return brianVersion;
