@@ -1,4 +1,5 @@
 {
+  "triggerName": "3times",
   "description": "Sample trigger request - 3 times",
   "scheduleType": "simple",
   "misfireInstruction": "IGNORE",
