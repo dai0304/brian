@@ -23,6 +23,12 @@ import org.quartz.Trigger;
 
 public abstract class BrianTrigger {
 	
+	/**
+	 * Returns {@link BrianTrigger} instance which correnspond to {@link Trigger}.
+	 * 
+	 * @param trigger
+	 * @return {@link BrianTrigger}
+	 */
 	public static BrianTrigger getInstance(Trigger trigger) {
 		if (trigger instanceof CronTrigger) {
 			return new BrianCronTrigger((CronTrigger) trigger);
@@ -47,8 +53,6 @@ public abstract class BrianTrigger {
 	
 	private final Date finalFireTime;
 
-//	private final Map<String,Object> jobDataMap;
-	
 	
 	BrianTrigger(Trigger trigger) {
 		group = trigger.getKey().getGroup();
@@ -58,7 +62,6 @@ public abstract class BrianTrigger {
 		startTime = trigger.getStartTime();
 		endTime = trigger.getEndTime();
 		finalFireTime = trigger.getFinalFireTime();
-//		jobDataMap = new HashMap<>(trigger.getJobDataMap());
 	}
 	
 	public String getGroup() {
@@ -88,8 +91,4 @@ public abstract class BrianTrigger {
 	public Date getFinalFireTime() {
 		return finalFireTime;
 	}
-	
-//	public Map<String, Object> getJobDataMap() {
-//		return jobDataMap;
-//	}
 }
