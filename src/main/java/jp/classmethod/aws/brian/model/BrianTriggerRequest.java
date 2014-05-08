@@ -30,6 +30,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class BrianTriggerRequest {
 	
 	@JsonProperty
+	private String triggerName;
+	
+	@JsonProperty
 	private String scheduleType;
 	
 	@JsonProperty
@@ -50,7 +53,7 @@ public class BrianTriggerRequest {
 	private String misfireInstruction;
 	
 	@JsonProperty
-	private Map<String, String> jobData;
+	private Map<String, Object> jobData;
 	
 	@JsonIgnore
 	private final Map<String, String> rest = new HashMap<>();
@@ -112,11 +115,11 @@ public class BrianTriggerRequest {
 		this.misfireInstruction = misfireInstruction;
 	}
 	
-	public Map<String, String> getJobData() {
+	public Map<String, Object> getJobData() {
 		return jobData;
 	}
 	
-	public void setJobData(Map<String, String> jobData) {
+	public void setJobData(Map<String, Object> jobData) {
 		this.jobData = jobData;
 	}
 	
@@ -124,10 +127,19 @@ public class BrianTriggerRequest {
 		return rest;
 	}
 	
+	public String getTriggerName() {
+		return triggerName;
+	}
+
+	
+	public void setTriggerName(String triggerName) {
+		this.triggerName = triggerName;
+	}
+
 	@Override
 	public String toString() {
-		return "BrianTriggerRequest [scheduleType=" + scheduleType + ", priority=" + priority + ", description="
-				+ description + ", startAt=" + startAt + ", endAt=" + endAt + ", misfireInstruction="
-				+ misfireInstruction + ", jobData=" + jobData + ", rest=" + rest + "]";
+		return "BrianTriggerRequest [triggerName=" + triggerName + ", scheduleType=" + scheduleType + ", priority="
+				+ priority + ", description=" + description + ", startAt=" + startAt + ", endAt=" + endAt
+				+ ", misfireInstruction=" + misfireInstruction + ", jobData=" + jobData + ", rest=" + rest + "]";
 	}
 }

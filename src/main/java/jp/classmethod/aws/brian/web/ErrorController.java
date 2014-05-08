@@ -17,6 +17,8 @@ package jp.classmethod.aws.brian.web;
 
 import javax.servlet.http.HttpServletRequest;
 
+import jp.classmethod.aws.brian.model.BrianResponse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -53,24 +55,24 @@ public class ErrorController {
 	@ResponseBody
 	@ResponseStatus(HttpStatus.NOT_FOUND)
 	@RequestMapping("/404")
-	public String notFound(HttpServletRequest req) {
+	public BrianResponse<String> notFound(HttpServletRequest req) {
 		logger.info("notFound invoked: {}", req);
-		return "404 - Not Found";
+		return new BrianResponse<>(false, "404 - Not Found", null);
 	}
 	
 	@ResponseBody
 	@ResponseStatus(HttpStatus.FORBIDDEN)
 	@RequestMapping("/403")
-	public String forbidden(HttpServletRequest req) {
+	public BrianResponse<String> forbidden(HttpServletRequest req) {
 		logger.info("forbidden invoked {}", req);
-		return "403 - Forbidden";
+		return new BrianResponse<>(false, "403 - Forbidden", null);
 	}
 	
 	@ResponseBody
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@RequestMapping("/500")
-	public String internalServerError(HttpServletRequest req) {
+	public BrianResponse<String> internalServerError(HttpServletRequest req) {
 		logger.info("internalServerError invoked {}", req);
-		return "500 - Internal Server Error";
+		return new BrianResponse<>(false, "500 - Internal Server Error", null);
 	}
 }

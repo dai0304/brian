@@ -16,7 +16,7 @@ defaultTasks 'clean', 'build'
 
 // ======== Generic ========
 group = 'jp.classmethod.aws'
-version = '0.3'
+version = '0.4'
 ext {
 	artifactId = 'brian'
 	defaultEncoding = 'UTF-8'

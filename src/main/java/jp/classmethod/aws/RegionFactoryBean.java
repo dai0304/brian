@@ -24,7 +24,7 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * TODO for daisuke
+ * Spring factyory bean for {@link Region}.
  *
  * @since 1.0
  * @author daisuke

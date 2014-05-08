@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
 
 /**
- * TODO for daisuke
+ * Spring factory bean for {@link InstanceMetadata}.
  *
  * @since 1.0
  * @author daisuke

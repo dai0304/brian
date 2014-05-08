@@ -16,7 +16,7 @@
 package jp.classmethod.aws;
 
 /**
- * TODO for daisuke
+ * EC2 Instance Metadata.
  * 
  * @since 1.0
  * @author daisuke
