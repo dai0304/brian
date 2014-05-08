@@ -19,7 +19,6 @@ import static org.quartz.TriggerBuilder.newTrigger;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -273,7 +272,7 @@ public class TriggerController {
 		boolean deleted = scheduler.unscheduleJob(triggerKey);
 		
 		if(deleted) {
-			return new ResponseEntity<>(new BrianResponse<>(new HashMap<>()), HttpStatus.OK);
+			return new ResponseEntity<>(new BrianResponse<>(null), HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(new BrianResponse<>("unschedule failed"), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
