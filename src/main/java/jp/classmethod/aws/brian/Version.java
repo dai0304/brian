@@ -17,7 +17,7 @@ package jp.classmethod.aws.brian;
 
 
 /**
- * Portnoy APIのバージョン番号を保持する。
+ * Brian API Version.
  * 
  * @since 1.0
  * @version $Id: Version.java 6175 2012-06-08 02:20:08Z miyamoto $
@@ -26,13 +26,13 @@ package jp.classmethod.aws.brian;
 public final class Version {
 	
 	/**
-	 * バージョン番号を返す。
+	 * Returns Brian API Version.
 	 * 
-	 * @return バージョン番号
+	 * @return Brian API Version
 	 * @since 1.0
 	 */
 	public static String getVersionString() {
-		return "[WORKING]"; // maven-injection-plugin による自動書き換え
+		return "[WORKING]";
 	}
 	
 	private Version() {
