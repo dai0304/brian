@@ -4,15 +4,16 @@
     <Target>System.out</Target>
     <withJansi>true</withJansi>
     <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-      <pattern>%d{ISO8601,JST} [%X{username}:%.16thread] %highlight(%-1level) %logger{36}:%line - %msg%n</pattern>
+      <pattern>%d{ISO8601,JST} [%X{username}:%.16thread] %-1level %logger{36}:%line - %msg%n</pattern>
     </encoder>
   </appender>
 
   <logger name="org.springframework.jdbc.datasource" level="INFO" />
   <logger name="org.springframework.scheduling.quartz.LocalDataSourceJobStore" level="INFO" />
   <logger name="org.apache.http" level="INFO" />
+  <logger name="org.quartz.core.QuartzSchedulerThread" level="DEBUG" />
 
-  <root level="DEBUG">
+  <root level="INFO">
     <appender-ref ref="STDOUT" />
   </root>
 </configuration>

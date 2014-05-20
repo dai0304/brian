@@ -91,7 +91,7 @@ public class TriggerController {
 	@Autowired
 	AmazonSNS sns;
 	
-	@Value("#{systemProperties['PARAM3']}")
+	@Value("#{systemProperties['PARAM3'] ?: systemProperties['BRIAN_TOPIC_ARN']}")
 	String topicArn;
 	
 	/**
@@ -105,6 +105,7 @@ public class TriggerController {
 	public BrianResponse<List<String>> getTriggerGroups() throws SchedulerException {
 		logger.info("getTriggerGroups");
 		List<String> triggerGroupNames = scheduler.getTriggerGroupNames();
+		logger.info("  result = {}", triggerGroupNames);
 		return new BrianResponse<>(triggerGroupNames);
 	}
 	
@@ -122,6 +123,8 @@ public class TriggerController {
 		logger.info("getTriggerNames {}", triggerGroupName);
 		
 		Set<TriggerKey> triggerKeys = scheduler.getTriggerKeys(GroupMatcher.triggerGroupEquals(triggerGroupName));
+		logger.info("  result = {}", triggerKeys);
+		
 		Iterable<String> names = Iterables.transform(triggerKeys, new Function<TriggerKey, String>() {
 			
 			@Override
@@ -232,7 +235,7 @@ public class TriggerController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/triggers/{triggerGroupName}/{triggerName}", method = RequestMethod.GET, produces = "application/json")
-	public String getTrigger(
+	public ResponseEntity<?> getTrigger(
 			@PathVariable("triggerGroupName") String triggerGroupName,
 			@PathVariable("triggerName") String triggerName)
 			throws SchedulerException {
@@ -240,11 +243,12 @@ public class TriggerController {
 		
 		TriggerKey triggerKey = TriggerKey.triggerKey(triggerName, triggerGroupName);
 		Trigger trigger = scheduler.getTrigger(triggerKey);
+		logger.info("{}", trigger);
 		if (trigger == null) {
 			throw new ResourceNotFoundException();
 		}
 		
-		return gson.toJson(trigger); // TODO
+		return new ResponseEntity<>(trigger, HttpStatus.OK);
 	}
 	
 	/**
@@ -272,7 +276,7 @@ public class TriggerController {
 		boolean deleted = scheduler.unscheduleJob(triggerKey);
 		
 		if(deleted) {
-			return new ResponseEntity<>(new BrianResponse<>(null), HttpStatus.OK);
+			return new ResponseEntity<>(new BrianResponse<>(), HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(new BrianResponse<>("unschedule failed"), HttpStatus.INTERNAL_SERVER_ERROR);
 		}

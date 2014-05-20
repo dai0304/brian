@@ -27,11 +27,19 @@ public class BrianResponse<T> {
 		this(false, message, null);
 	}
 	
+	
 	/**
-	 * @param message
+	 * @param content
 	 */
 	public BrianResponse(T content) {
 		this(true, null, content);
+	}
+	
+	/**
+	 * 
+	 */
+	public BrianResponse() {
+		this(true, null, null);
 	}
 	
 	public boolean isSuccess() {
