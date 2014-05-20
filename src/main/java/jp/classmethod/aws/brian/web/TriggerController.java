@@ -272,7 +272,7 @@ public class TriggerController {
 		boolean deleted = scheduler.unscheduleJob(triggerKey);
 		
 		if(deleted) {
-			return new ResponseEntity<>(new BrianResponse<>(null), HttpStatus.OK);
+			return new ResponseEntity<>(new BrianResponse<>(), HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(new BrianResponse<>("unschedule failed"), HttpStatus.INTERNAL_SERVER_ERROR);
 		}

@@ -34,6 +34,13 @@ public class BrianResponse<T> {
 		this(true, null, content);
 	}
 	
+	/**
+	 * 
+	 */
+	public BrianResponse() {
+		this(true, null, null);
+	}
+	
 	public boolean isSuccess() {
 		return success;
 	}
