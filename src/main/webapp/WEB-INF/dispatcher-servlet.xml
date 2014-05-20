@@ -12,8 +12,22 @@
 
   <context:annotation-config />
   <context:component-scan base-package="jp.classmethod.aws.brian.web" />
-  <mvc:annotation-driven />
   <mvc:default-servlet-handler />
   <mvc:resources location="/favicon.ico" mapping="/favicon.ico" />
+
+  <!-- **************************************************************** -->
+  <!-- SPRING ANNOTATION PROCESSING -->
+  <!-- **************************************************************** -->
+  <bean id="jacksonObjectMapper" class="jp.classmethod.aws.brian.utils.CustomObjectMapper" />
+
+  <mvc:annotation-driven>
+    <mvc:message-converters>
+      <bean class="org.springframework.http.converter.StringHttpMessageConverter" />
+      <bean class="org.springframework.http.converter.ByteArrayHttpMessageConverter" />
+      <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+        <property name="objectMapper" ref="jacksonObjectMapper" />
+      </bean>
+    </mvc:message-converters>
+  </mvc:annotation-driven>
 
 </beans>

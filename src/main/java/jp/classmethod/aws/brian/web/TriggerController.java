@@ -232,7 +232,7 @@ public class TriggerController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/triggers/{triggerGroupName}/{triggerName}", method = RequestMethod.GET, produces = "application/json")
-	public String getTrigger(
+	public ResponseEntity<?> getTrigger(
 			@PathVariable("triggerGroupName") String triggerGroupName,
 			@PathVariable("triggerName") String triggerName)
 			throws SchedulerException {
@@ -244,7 +244,7 @@ public class TriggerController {
 			throw new ResourceNotFoundException();
 		}
 		
-		return gson.toJson(trigger); // TODO
+		return new ResponseEntity<>(trigger, HttpStatus.OK);
 	}
 	
 	/**
