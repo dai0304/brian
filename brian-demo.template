@@ -1,0 +1,340 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Portnoy environment template",
+  "Parameters": {
+    "KeyName": {
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "64",
+      "AllowedPattern": "[-_ a-zA-Z0-9]*",
+      "ConstraintDescription": "can contain only alphanumeric characters, spaces, dashes and underscores."
+    },
+    "DBUsername": {
+      "Default": "admin",
+      "Description" : "The database admin account username",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "16",
+      "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+    },
+    "DBPassword" : {
+      "Description" : "Password of RDS master password",
+      "Type" : "String",
+      "NoEcho": "true",
+      "MinLength": "4"
+    },
+    "VPC" : {
+      "Description" : "VPC ID",
+      "Type" : "String"
+    },
+    "VPCCIDR" : {
+      "Description" : "CIDR block of VPC",
+      "Default" : "10.0.0.0/16",
+      "Type" : "String"
+    },
+    "Subnet1" : {
+      "Description" : "Subnet ID 1",
+      "Type" : "String"
+    },
+    "Subnet2" : {
+      "Description" : "Subnet ID 2",
+      "Type" : "String"
+    },
+    "BrianVersion" : {
+      "Default": "0.5",
+      "Description" : "Version of Brian",
+      "Type" : "String"
+    }
+  },
+  "Mappings": {
+    "AWSAmazonLinuxAMI": {
+      "us-east-1":      { "name":"Virginia",   "201303": "ami-3275ee5b", "201309": "ami-35792c5c" },
+      "us-west-2":      { "name":"Oregon",     "201303": "ami-ecbe2adc", "201309": "ami-d03ea1e0" },
+      "us-west-1":      { "name":"California", "201303": "ami-66d1fc23", "201309": "ami-687b4f2d" },
+      "eu-west-1":      { "name":"Ireland",    "201303": "ami-44939930", "201309": "ami-149f7863" },
+      "ap-southeast-1": { "name":"Singapole",  "201303": "ami-aa9ed2f8", "201309": "ami-14f2b946" },
+      "ap-southeast-2": { "name":"Sydney",     "201303": "ami-363eaf0c", "201309": "ami-a148d59b" },
+      "ap-northeast-1": { "name":"Tokyo",      "201303": "ami-173fbf16", "201309": "ami-3561fe34" },
+      "sa-east-1":      { "name":"SaoPaulo",   "201303": "ami-dd6bb0c0", "201309": "ami-9f6ec982" }
+    },
+    "StackConfig" : {
+      "BastionServer": { "InstanceType" : "t1.micro" },
+      "BrianServer"  : { "InstanceType" : "t1.micro" },
+      "DBServer"     : { "InstanceType" : "db.t1.micro", "AllocatedStorage" : "5" }
+    }
+  },
+  "Resources": {
+    "BrianRole" : {
+      "Type" : "AWS::IAM::Role",
+      "Properties" : {
+        "AssumeRolePolicyDocument" : {
+          "Statement": [ {
+            "Effect": "Allow",
+              "Principal": {
+                "Service": [ "ec2.amazonaws.com" ]
+              },
+              "Action": [ "sts:AssumeRole" ]
+          } ]
+        },
+        "Path" : "/",
+        "Policies" :[ {
+          "PolicyName" : "BrianPolicy",
+          "PolicyDocument" : {
+            "Statement": [
+              {
+                "Sid": "BrianStmt",
+                "Effect": "Allow",
+                "Action": "sns:Publish",
+                "Resource": [
+                  { "Ref" : "BrianTopic" }
+                ]
+              },
+              {
+                "Sid": "BrianMetricsStmt",
+                "Effect": "Allow",
+                "Action": "cloudwatch:PutMetricData",
+                "Resource": "*"
+              }
+            ]
+          }
+        }]
+      }
+    },
+    "BrianProfile" : {
+      "Type" : "AWS::IAM::InstanceProfile",
+      "Properties" : {
+        "Path": "/",
+        "Roles" : [ { "Ref" : "BrianRole" } ]
+      }
+    },
+
+
+    "VPCDefaultSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "GroupDescription" : "Allow all communications in VPC",
+        "SecurityGroupIngress" : [
+          { "IpProtocol" : "tcp", "FromPort" : "0", "ToPort" : "65535", "CidrIp" : { "Ref" : "VPCCIDR" }},
+          { "IpProtocol" : "udp", "FromPort" : "0", "ToPort" : "65535", "CidrIp" : { "Ref" : "VPCCIDR" }},
+          { "IpProtocol" : "icmp", "FromPort" : "-1", "ToPort" : "-1", "CidrIp" : { "Ref" : "VPCCIDR" }}
+        ]
+      }
+    },
+    "SSHSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "GroupDescription" : "Enable SSH access via port 22",
+        "SecurityGroupIngress" : [
+          { "IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : "0.0.0.0/0" }
+        ]
+      }
+    },
+    "MySQLSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "GroupDescription" : "Enable MySQL access via port 3306 from VPC",
+        "SecurityGroupIngress" : [
+          { "IpProtocol" : "tcp", "FromPort" : "3306", "ToPort" : "3306", "CidrIp" : { "Ref" : "VPCCIDR" }}
+        ]
+      }
+    },
+    "BrianSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "GroupDescription" : "Security Group for Brian instances"
+      }
+    },
+
+
+    "BastionInstanceEIP": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc",
+        "InstanceId": { "Ref" : "BastionInstance" }
+      }
+    },
+    "BastionInstance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "InstanceType": { "Fn::FindInMap" : [ "StackConfig", "BastionServer", "InstanceType" ]},
+        "KeyName": { "Ref": "KeyName" },
+        "SubnetId": { "Ref" : "Subnet1" },
+        "ImageId": { "Fn::FindInMap": [ "AWSAmazonLinuxAMI", { "Ref": "AWS::Region" }, "201309" ]},
+        "SecurityGroupIds" : [
+          { "Ref" : "SSHSecurityGroup" },
+          { "Ref" : "VPCDefaultSecurityGroup" }
+        ],
+        "Tags": [
+          { "Key" : "Name", "Value": "Bastion" }
+        ]
+      }
+    },
+
+    "DBParamGroup" : {
+      "Type": "AWS::RDS::DBParameterGroup",
+      "Properties" : {
+        "Description" : "Default parameter group for Brian",
+        "Family" : "MySQL5.6",
+        "Parameters" : {
+          "character_set_database" : "utf8mb4",
+          "character_set_client" : "utf8mb4",
+          "character_set_connection" : "utf8mb4",
+          "character_set_results" : "utf8mb4",
+          "character_set_server" : "utf8mb4",
+          "sort_buffer_size" : "2097152",
+          "skip-character-set-client-handshake" : "TRUE",
+          "general_log" : "1",
+          "log_output" : "FILE",
+          "slow_query_log" : "1",
+          "long_query_time" : "1"
+        }
+      }
+    },
+    "DBSubnetGroup" : {
+      "Type" : "AWS::RDS::DBSubnetGroup",
+      "Properties" : {
+        "DBSubnetGroupDescription" : "Database subnets for RDS",
+        "SubnetIds" : [
+          { "Ref": "Subnet1" },
+          { "Ref": "Subnet2" }
+        ]
+      }
+    },
+    "DBInstance" : {
+      "Type" : "AWS::RDS::DBInstance",
+      "DeletionPolicy" : "Snapshot",
+      "Properties" : {
+        "DBInstanceClass" : { "Fn::FindInMap" : [ "StackConfig", "DBServer", "InstanceType" ]},
+        "AllocatedStorage" : { "Fn::FindInMap" : [ "StackConfig", "DBServer", "AllocatedStorage" ]},
+        "Engine" : "MySQL",
+        "MultiAZ" : "true",
+        "EngineVersion" : "5.6.13",
+        "MasterUsername" : { "Ref" : "DBUsername" },
+        "MasterUserPassword" : { "Ref" : "DBPassword" },
+        "DBName" : "brian",
+        "DBParameterGroupName" : { "Ref" : "DBParamGroup" },
+        "DBSubnetGroupName" : { "Ref" : "DBSubnetGroup" },
+        "VPCSecurityGroups" : [
+          { "Ref" : "VPCDefaultSecurityGroup" },
+          { "Ref" : "MySQLSecurityGroup" }
+        ]
+      }
+    },
+    "BrianTopic" : {
+      "Type" : "AWS::SNS::Topic",
+      "Properties" : {
+        "Subscription" : [
+          { "Endpoint" : { "Fn::GetAtt" : [ "WorkerQueue", "Arn" ] }, "Protocol" : "sqs" }
+        ]
+      }
+    },
+
+    "WorkerQueue" : {
+      "Type" : "AWS::SQS::Queue"
+    },
+    
+    "WorkerQueuePolicy" : {
+      "Type" : "AWS::SQS::QueuePolicy",
+      "Properties" : {
+        "Queues" : [ { "Ref" : "WorkerQueue" } ],
+        "PolicyDocument":  {
+          "Version": "2008-10-17",
+          "Id": "WorkerQueuePolicy-Document",
+          "Statement" : [
+            {
+              "Sid": "Allow-SNS-SendMessage",
+              "Effect": "Allow",
+              "Principal" : {
+                "AWS": "*"
+              },
+              "Action": "sqs:SendMessage",
+              "Resource": { "Fn::GetAtt" : [ "WorkerQueue", "Arn" ] },
+              "Condition" : {
+                "ArnEquals" : {
+                  "aws:SourceArn" : [ { "Ref" : "BrianTopic" } ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+
+    "BrianApplication" : {
+      "Type" : "AWS::ElasticBeanstalk::Application",
+      "Properties" : {
+        "ApplicationName" : "brian",
+        "Description" : "brian"
+      }
+    },
+    "BrianAppVer" : {
+      "Type" : "AWS::ElasticBeanstalk::ApplicationVersion",
+      "DeletionPolicy" : "Retain",
+      "Properties" : {
+        "ApplicationName" : { "Ref" : "BrianApplication" },
+        "Description" : { "Fn::Join" :[ "-", [ "brian", { "Ref" : "BrianVersion" } ]]},
+        "SourceBundle" : {
+          "S3Bucket" : "cm-public-eb-applications",
+          "S3Key" : { "Fn::Join" :[ "", [ "brian/brian-", { "Ref" : "BrianVersion" }, ".war" ]]}
+        }
+      }
+    },
+    "BrianConfig" : {
+      "Type" : "AWS::ElasticBeanstalk::ConfigurationTemplate",
+      "Properties" : {
+        "ApplicationName" : { "Ref" : "BrianApplication" },
+        "Description" : "brian configuration template",
+        "SolutionStackName" : "64bit Amazon Linux 2014.03 v1.0.2 running Tomcat 7 Java 7",
+        "OptionSettings" : [
+          { "Namespace" : "aws:ec2:vpc", "OptionName" : "VPCId", "Value" : { "Ref" : "VPC" } },
+          { "Namespace" : "aws:ec2:vpc", "OptionName" : "Subnets", "Value" : { "Fn::Join" :[ ",", [
+            { "Ref" : "Subnet1" },
+            { "Ref" : "Subnet2" }
+          ]]}},
+          { "Namespace" : "aws:ec2:vpc", "OptionName" : "ELBSubnets", "Value" : { "Fn::Join" :[ ",", [
+            { "Ref" : "Subnet1" },
+            { "Ref" : "Subnet2" }
+          ]]}},
+          { "Namespace" : "aws:ec2:vpc", "OptionName" : "ELBScheme", "Value" : "internal" },
+          { "Namespace" : "aws:ec2:vpc", "OptionName" : "AssociatePublicIpAddress", "Value" : "true" },
+          
+          { "Namespace" : "aws:autoscaling:launchconfiguration", "OptionName" : "InstanceType", "Value" : { "Fn::FindInMap" : [ "StackConfig", "BrianServer", "InstanceType" ]}},
+          { "Namespace" : "aws:autoscaling:launchconfiguration", "OptionName" : "EC2KeyName",   "Value" : { "Ref" : "KeyName" }},
+          { "Namespace" : "aws:autoscaling:launchconfiguration", "OptionName" : "SecurityGroups", "Value" : { "Ref" : "VPCDefaultSecurityGroup" }},
+          { "Namespace" : "aws:autoscaling:launchconfiguration", "OptionName" : "IamInstanceProfile", "Value" : { "Ref" : "BrianProfile" }},
+          { "Namespace" : "aws:autoscaling:launchconfiguration", "OptionName" : "SSHSourceRestriction", "Value" : { "Fn::Join" : [ "", ["tcp,22,22,", { "Ref" : "VPCCIDR" }]]}},
+          
+          { "Namespace" : "aws:autoscaling:asg", "OptionName" : "MinSize", "Value" : "2" },
+          { "Namespace" : "aws:autoscaling:asg", "OptionName" : "MaxSize", "Value" : "4" },
+          
+          { "Namespace" : "aws:elasticbeanstalk:application", "OptionName" : "Application Healthcheck URL", "Value" : "/healthcheck" },
+          
+          { "Namespace" : "aws:elasticbeanstalk:application:environment", "OptionName" : "JDBC_CONNECTION_STRING", "Value" : { "Fn::Join" : [ "", [
+            "jdbc:mysql://",
+            { "Fn::GetAtt": [ "DBInstance", "Endpoint.Address" ] }, ":",
+            { "Fn::GetAtt": [ "DBInstance", "Endpoint.Port" ] }, "/brian"
+          ]]}},
+          { "Namespace" : "aws:elasticbeanstalk:application:environment", "OptionName" : "DB_USERNAME", "Value" : { "Ref" : "DBUsername" } },
+          { "Namespace" : "aws:elasticbeanstalk:application:environment", "OptionName" : "DB_PASSWORD", "Value" : { "Ref" : "DBPassword" } },
+          { "Namespace" : "aws:elasticbeanstalk:application:environment", "OptionName" : "BRIAN_TOPIC_ARN", "Value" : { "Ref" : "BrianTopic" } }
+        ]
+      }
+    },
+    "BrianEnvironment" : {
+      "Type" : "AWS::ElasticBeanstalk::Environment",
+      "Properties" : {
+        "ApplicationName" : { "Ref" : "BrianApplication" },
+        "Description" : "Brian environment.",
+        "EnvironmentName" : "brian-demo",
+        "TemplateName" : { "Ref" : "BrianConfig" },
+        "VersionLabel" : { "Ref" : "BrianAppVer" }
+      }
+    }
+  }
+}
