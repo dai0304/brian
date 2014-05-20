@@ -27,8 +27,9 @@ public class BrianResponse<T> {
 		this(false, message, null);
 	}
 	
+	
 	/**
-	 * @param message
+	 * @param content
 	 */
 	public BrianResponse(T content) {
 		this(true, null, content);

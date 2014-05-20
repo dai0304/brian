@@ -105,6 +105,7 @@ public class TriggerController {
 	public BrianResponse<List<String>> getTriggerGroups() throws SchedulerException {
 		logger.info("getTriggerGroups");
 		List<String> triggerGroupNames = scheduler.getTriggerGroupNames();
+		logger.info("  result = {}", triggerGroupNames);
 		return new BrianResponse<>(triggerGroupNames);
 	}
 	
@@ -122,6 +123,8 @@ public class TriggerController {
 		logger.info("getTriggerNames {}", triggerGroupName);
 		
 		Set<TriggerKey> triggerKeys = scheduler.getTriggerKeys(GroupMatcher.triggerGroupEquals(triggerGroupName));
+		logger.info("  result = {}", triggerKeys);
+		
 		Iterable<String> names = Iterables.transform(triggerKeys, new Function<TriggerKey, String>() {
 			
 			@Override
@@ -240,6 +243,7 @@ public class TriggerController {
 		
 		TriggerKey triggerKey = TriggerKey.triggerKey(triggerName, triggerGroupName);
 		Trigger trigger = scheduler.getTrigger(triggerKey);
+		logger.info("{}", trigger);
 		if (trigger == null) {
 			throw new ResourceNotFoundException();
 		}
