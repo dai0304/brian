@@ -144,22 +144,22 @@ ext {
 
 task setSystemProperties << {
 	assert project.hasProperty('JDBC_CONNECTION_STRING'): "JDBC_CONNECTION_STRING is required"
-	assert project.hasProperty('PARAM1'): "PARAM1 is required"
-	assert project.hasProperty('PARAM2'): "PARAM2 is required"
-	assert project.hasProperty('PARAM3'): "PARAM3 is required"
+	assert project.hasProperty('DB_USERNAME'): "DB_USERNAME is required"
+	assert project.hasProperty('DB_PASSWORD'): "DB_PASSWORD is required"
+	assert project.hasProperty('BRIAN_TOPIC_ARN'): "BRIAN_TOPIC_ARN is required"
 	
-	System.setProperty 'JDBC_CONNECTION_STRING', JDBC_CONNECTION_STRING
-	System.setProperty 'PARAM1', PARAM1
-	System.setProperty 'PARAM2', PARAM2
-	System.setProperty 'PARAM3', PARAM3
-	System.setProperty 'aws.accessKeyId', awsAccessKey
-	System.setProperty 'aws.secretKey', awsSecretKey
+	System.setProperty 'JDBC_CONNECTION_STRING', project.JDBC_CONNECTION_STRING
+	System.setProperty 'DB_USERNAME', project.DB_USERNAME
+	System.setProperty 'DB_PASSWORD', project.DB_PASSWORD
+	System.setProperty 'BRIAN_TOPIC_ARN', project.BRIAN_TOPIC_ARN
+	System.setProperty 'aws.accessKeyId', project.awsAccessKey
+	System.setProperty 'aws.secretKey', project.awsSecretKey
 	
 	if (project.hasProperty('springProfilesActive')) {
-		System.setProperty 'spring.profiles.active', springProfilesActive
+		System.setProperty 'spring.profiles.active', project.springProfilesActive
 	}
 	if (project.hasProperty('logbackConfigurationFile')) {
-		System.setProperty 'logback.configurationFile', logbackConfigurationFile
+		System.setProperty 'logback.configurationFile', project.logbackConfigurationFile
 	}
 }
 

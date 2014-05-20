@@ -34,8 +34,8 @@
   <bean id="basicDataSource" autowire-candidate="false" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
     <property name="driverClassName" value="com.mysql.jdbc.Driver" />
     <property name="url" value="#{systemProperties['JDBC_CONNECTION_STRING']}" />
-    <property name="username" value="#{systemProperties['PARAM1']}" />
-    <property name="password" value="#{systemProperties['PARAM2']}" />
+    <property name="username" value="#{systemProperties['PARAM1'] ?: systemProperties['DB_USERNAME']}" />
+    <property name="password" value="#{systemProperties['PARAM2'] ?: systemProperties['DB_PASSWORD']}" />
     <property name="validationQuery" value="SELECT 1" />
     <property name="maxActive" value="50" />
     <property name="maxIdle" value="10" />

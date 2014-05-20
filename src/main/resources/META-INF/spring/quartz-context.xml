@@ -37,7 +37,7 @@
       <map>
         <entry key="gson" value-ref="gson" />
         <entry key="sns" value-ref="sns" />
-        <entry key="topicArn"  value="#{systemProperties['PARAM3']}" />
+        <entry key="topicArn"  value="#{systemProperties['PARAM3'] ?: systemProperties['BRIAN_TOPIC_ARN']}" />
       </map>
     </property>
     <property name="quartzProperties">

@@ -91,7 +91,7 @@ public class TriggerController {
 	@Autowired
 	AmazonSNS sns;
 	
-	@Value("#{systemProperties['PARAM3']}")
+	@Value("#{systemProperties['PARAM3'] ?: systemProperties['BRIAN_TOPIC_ARN']}")
 	String topicArn;
 	
 	/**
