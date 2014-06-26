@@ -137,7 +137,7 @@ public class TriggerController {
 	}
 	
 	/**
-	 * Get trigger names in the specified group.
+	 * Create trigger.
 	 * 
 	 * @param triggerGroupName groupName
 	 * @return trigger names
@@ -145,11 +145,11 @@ public class TriggerController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/triggers/{triggerGroupName}", method = RequestMethod.POST)
-	public ResponseEntity<?> postTrigger(
+	public ResponseEntity<?> createTrigger(
 			@PathVariable("triggerGroupName") String triggerGroupName,
 			@RequestBody BrianTriggerRequest triggerRequest)
 			throws SchedulerException {
-		logger.info("postTrigger {}.{}", triggerGroupName);
+		logger.info("createTrigger {}.{}", triggerGroupName);
 		logger.info("{}", triggerRequest);
 		
 		String triggerName = triggerRequest.getTriggerName();
@@ -177,7 +177,7 @@ public class TriggerController {
 	}
 
 	/**
-	 * Create or update the trigger.
+	 * Update the trigger.
 	 * 
 	 * @param triggerGroupName trigger group name
 	 * @param triggerName trigger name
@@ -188,13 +188,12 @@ public class TriggerController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/triggers/{triggerGroupName}/{triggerName}", method = RequestMethod.PUT)
-	public ResponseEntity<?> putTrigger(
+	public ResponseEntity<?> updateTrigger(
 			@PathVariable("triggerGroupName") String triggerGroupName,
 			@PathVariable("triggerName") String triggerName,
 			@RequestBody BrianTriggerRequest triggerRequest)
 			throws SchedulerException {
-		logger.info("putTrigger {}.{}", triggerGroupName, triggerName);
-		logger.info("{}", triggerRequest);
+		logger.info("updateTrigger {}.{}: {}", triggerGroupName, triggerName, triggerRequest);
 		
 		if (triggerName.equals(triggerRequest.getTriggerName()) == false) {
 			String message = String.format("trigger names %s in the path and %s in the request body is not equal",
@@ -205,7 +204,7 @@ public class TriggerController {
 		try {
 			TriggerKey triggerKey = TriggerKey.triggerKey(triggerName, triggerGroupName);
 			if (scheduler.checkExists(triggerKey) == false) {
-				String message = String.format("trigger %s.%s does not found.", triggerGroupName, triggerName);
+				String message = String.format("trigger %s.%s is not found.", triggerGroupName, triggerName);
 				return new ResponseEntity<>(new BrianResponse<>(message), HttpStatus.NOT_FOUND);
 			}
 			
@@ -269,7 +268,7 @@ public class TriggerController {
 		
 		TriggerKey triggerKey = TriggerKey.triggerKey(triggerName, triggerGroupName);
 		if (scheduler.checkExists(triggerKey) == false) {
-			String message = String.format("trigger %s.%s does not found.", triggerGroupName, triggerName);
+			String message = String.format("trigger %s.%s is not found.", triggerGroupName, triggerName);
 			return new ResponseEntity<>(new BrianResponse<>(message), HttpStatus.NOT_FOUND);
 		}
 
@@ -284,18 +283,20 @@ public class TriggerController {
 	
 	@ResponseBody
 	@RequestMapping(value = "/triggers/{triggerGroupName}/{triggerName}", method = RequestMethod.POST)
-	public ResponseEntity<BrianResponse<Map<String, Object>>> forceFireTrigger(
+	public ResponseEntity<?> forceFireTrigger(
 			@PathVariable("triggerGroupName") String triggerGroupName,
 			@PathVariable("triggerName") String triggerName)
 			throws SchedulerException {
 		logger.info("forceFireTrigger {}.{}", triggerGroupName, triggerName);
 		
-		BrianMessage message = new BrianMessage(Clock.now().asJavaUtilDate(), "FII", new ManualBrianTrigger(triggerName, triggerGroupName), null);
-		String json = gson.toJson(message);
-		logger.info("-------- Brian Message");
-		logger.info(json);
+		TriggerKey triggerKey = TriggerKey.triggerKey(triggerName, triggerGroupName);
+		if (scheduler.checkExists(triggerKey) == false) {
+			String message = String.format("trigger %s.%s is not found.", triggerGroupName, triggerName);
+			return new ResponseEntity<>(new BrianResponse<>(message), HttpStatus.NOT_FOUND);
+		}
 		
-		sns.publish(topicArn, json);
+		Trigger trigger = scheduler.getTrigger(triggerKey);
+		scheduler.triggerJob(quartzJob.getKey(), trigger.getJobDataMap());
 		
 		Map<String, Object> map = new HashMap<>();
 		return new ResponseEntity<>(new BrianResponse<>(map), HttpStatus.OK);
