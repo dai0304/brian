@@ -134,7 +134,7 @@ public class BrianQuartzJobBean extends QuartzJobBean {
 			logger.info("          jobClass = {}", jobDetail.getJobClass());
 			logger.info("        jobDataMap = {}", toString(jobDetail.getJobDataMap()));
 			
-			logger.info("-------- Brian Message");
+			logger.info("-------- Brian Message to {}", topicArn);
 			logger.info(json);
 			
 			sns.publish(topicArn, json);
