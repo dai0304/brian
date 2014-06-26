@@ -1,8 +1,12 @@
 buildscript {
-	repositories.mavenCentral()
+	repositories {
+		mavenCentral()
+		maven { url 'http://public-maven.classmethod.info/release' }
+	}
 	dependencies {
 		classpath 'org.hibernate.build.gradle:version-injection-plugin:1.0.0'
 		classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.7.0'
+		classpath 'jp.classmethod.aws:gradle-aws-plugin:0.11'
 	}
 }
 
@@ -197,6 +201,25 @@ sourceSets.main.output.resourcesDir = 'src/main/webapp/WEB-INF/classes'
 clean {
 	delete << 'src/main/webapp/WEB-INF/classes'
 }
+
+// ======== release tasks ========
+apply plugin: 'aws'
+aws {
+	assert project.hasProperty('awsAccessKeyForRelease') && project.hasProperty('awsSecretKeyForRelease'): "AWS credential is required"
+	accessKeyId awsAccessKeyForRelease
+	secretKey awsSecretKeyForRelease
+	region 'ap-northeast-1'
+}
+
+apply plugin: 'aws-s3'
+task uploadWar(type: jp.classmethod.aws.gradle.s3.AmazonS3FileUploadTask, dependsOn: war) {
+	bucketName 'cm-public-eb-applications'
+	key "${artifactId}/${artifactId}-${version}.war"
+	file project.war.archivePath
+	overwrite project.version.endsWith('-SNAPSHOT')
+}
+
+task uploadArchives(dependsOn: uploadWar)
 
 
 // ======== wrapper ========
