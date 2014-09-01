@@ -33,19 +33,19 @@ tasks.withType(AbstractCompile) each {
 }
 
 ext {
-	junitVersion = "4.11"
-	hamcrestVersion = "1.3"
-	mockitoCoreVersion = "1.9.5"
+	junitVersion = '4.11'
+	hamcrestVersion = '1.3'
+	mockitoCoreVersion = '1.9.5'
 
-	slf4jVersion = "1.7.2"
-	logbackVersion = "1.0.11"
+	slf4jVersion = '1.7.2'
+	logbackVersion = '1.0.11'
 	
-	springVersion = "3.2.4.RELEASE"
-	mysqlVersion = "5.1.22"
-	guavaVersion = "15.0"
-	gsonVersion = "2.2.2"
-	baseunitsVersion = "2.11"
-	awsJavaSdkVersion = "1.7.1"
+	springVersion = '3.2.4.RELEASE'
+	mysqlVersion = '5.1.22'
+	guavaVersion = '15.0'
+	gsonVersion = '2.2.2'
+	baseunitsVersion = '2.11'
+	awsJavaSdkVersion = '1.7.1'
 	jettyVersion = '9.0.4.v20130625'
 }
 
