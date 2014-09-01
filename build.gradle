@@ -224,7 +224,7 @@ task uploadArchives(dependsOn: uploadWar)
 
 // ======== wrapper ========
 task wrapper(type: Wrapper) {
-	gradleVersion = '1.8'
+	gradleVersion = '2.0'
 }
 
 // ======== License =======
