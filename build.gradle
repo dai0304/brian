@@ -45,7 +45,7 @@ ext {
 	guavaVersion = '15.0'
 	gsonVersion = '2.2.2'
 	baseunitsVersion = '2.11'
-	awsJavaSdkVersion = '1.7.1'
+	awsJavaSdkVersion = '1.8.9.1'
 	jettyVersion = '9.0.4.v20130625'
 }
 
