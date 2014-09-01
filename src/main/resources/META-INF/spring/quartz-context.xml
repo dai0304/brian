@@ -49,6 +49,7 @@
         <prop key="org.quartz.jobStore.driverDelegateClass">org.quartz.impl.jdbcjobstore.StdJDBCDelegate</prop>
         <prop key="org.quartz.jobStore.tablePrefix">QRTZ_</prop>
         <prop key="org.quartz.jobStore.isClustered">true</prop>
+        <prop key="org.quartz.jobStore.dontSetAutoCommitFalse">false</prop>
         <prop key="org.quartz.threadPool.class">org.springframework.scheduling.quartz.SimpleThreadPoolTaskExecutor</prop>
         <prop key="org.quartz.threadPool.threadCount">30</prop>
         <prop key="org.quartz.threadPool.threadPriority">5</prop>
