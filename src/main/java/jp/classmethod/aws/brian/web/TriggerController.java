@@ -196,7 +196,7 @@ public class TriggerController {
 		logger.info("updateTrigger {}.{}: {}", triggerGroupName, triggerName, triggerRequest);
 		
 		if (triggerName.equals(triggerRequest.getTriggerName()) == false) {
-			String message = String.format("trigger names %s in the path and %s in the request body is not equal",
+			String message = String.format("trigger names '%s' in the path and '%s' in the request body is not equal",
 					triggerName, triggerRequest.getTriggerName());
 			return new ResponseEntity<>(new BrianResponse<>(message), HttpStatus.BAD_REQUEST);
 		}

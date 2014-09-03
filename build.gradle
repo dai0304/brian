@@ -20,7 +20,7 @@ defaultTasks 'clean', 'build'
 
 // ======== Generic ========
 group = 'jp.classmethod.aws'
-version = '0.6'
+version = '0.7'
 ext {
 	artifactId = 'brian'
 	defaultEncoding = 'UTF-8'
@@ -33,19 +33,19 @@ tasks.withType(AbstractCompile) each {
 }
 
 ext {
-	junitVersion = "4.11"
-	hamcrestVersion = "1.3"
-	mockitoCoreVersion = "1.9.5"
+	junitVersion = '4.11'
+	hamcrestVersion = '1.3'
+	mockitoCoreVersion = '1.9.5'
 
-	slf4jVersion = "1.7.2"
-	logbackVersion = "1.0.11"
+	slf4jVersion = '1.7.7'
+	logbackVersion = '1.1.2'
 	
-	springVersion = "3.2.4.RELEASE"
-	mysqlVersion = "5.1.22"
-	guavaVersion = "15.0"
-	gsonVersion = "2.2.2"
-	baseunitsVersion = "2.11"
-	awsJavaSdkVersion = "1.7.1"
+	springVersion = '3.2.4.RELEASE'
+	mysqlVersion = '5.1.22'
+	guavaVersion = '15.0'
+	gsonVersion = '2.2.2'
+	baseunitsVersion = '2.11'
+	awsJavaSdkVersion = '1.8.9.1'
 	jettyVersion = '9.0.4.v20130625'
 }
 
@@ -224,7 +224,7 @@ task uploadArchives(dependsOn: uploadWar)
 
 // ======== wrapper ========
 task wrapper(type: Wrapper) {
-	gradleVersion = '1.8'
+	gradleVersion = '2.0'
 }
 
 // ======== License =======
