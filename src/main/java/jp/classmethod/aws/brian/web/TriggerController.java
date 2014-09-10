@@ -19,6 +19,7 @@ import static org.quartz.TriggerBuilder.newTrigger;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -91,6 +92,7 @@ public class TriggerController {
 	@Value("#{systemProperties['PARAM3'] ?: systemProperties['BRIAN_TOPIC_ARN']}")
 	String topicArn;
 	
+	
 	/**
 	 * Get trigger groups.
 	 * 
@@ -102,6 +104,7 @@ public class TriggerController {
 	public BrianResponse<List<String>> getTriggerGroups() throws SchedulerException {
 		logger.info("getTriggerGroups");
 		List<String> triggerGroupNames = scheduler.getTriggerGroupNames();
+		Collections.sort(triggerGroupNames);
 		logger.info("  result = {}", triggerGroupNames);
 		return new BrianResponse<>(triggerGroupNames);
 	}
@@ -122,15 +125,16 @@ public class TriggerController {
 		Set<TriggerKey> triggerKeys = scheduler.getTriggerKeys(GroupMatcher.triggerGroupEquals(triggerGroupName));
 		logger.info("  result = {}", triggerKeys);
 		
-		Iterable<String> names = Iterables.transform(triggerKeys, new Function<TriggerKey, String>() {
-			
-			@Override
-			public String apply(TriggerKey input) {
-				return input == null ? null : input.getName();
-			}
-		});
-		
-		return new BrianResponse<List<String>>(Lists.newArrayList(names));
+		List<String> triggerNames = Lists.newArrayList(Iterables.transform(triggerKeys,
+				new Function<TriggerKey, String>() {
+					
+					@Override
+					public String apply(TriggerKey input) {
+						return input == null ? null : input.getName();
+					}
+				}));
+		Collections.sort(triggerNames);
+		return new BrianResponse<List<String>>(triggerNames);
 	}
 	
 	/**
@@ -172,7 +176,7 @@ public class TriggerController {
 			return new ResponseEntity<>(new BrianResponse<>(message), HttpStatus.BAD_REQUEST);
 		}
 	}
-
+	
 	/**
 	 * Update the trigger.
 	 * 
@@ -219,7 +223,7 @@ public class TriggerController {
 			return new ResponseEntity<>(new BrianResponse<>(message), HttpStatus.BAD_REQUEST);
 		}
 	}
-
+	
 	/**
 	 * Get trigger information for the specified trigger.
 	 * 
@@ -268,10 +272,10 @@ public class TriggerController {
 			String message = String.format("trigger %s.%s is not found.", triggerGroupName, triggerName);
 			return new ResponseEntity<>(new BrianResponse<>(message), HttpStatus.NOT_FOUND);
 		}
-
+		
 		boolean deleted = scheduler.unscheduleJob(triggerKey);
 		
-		if(deleted) {
+		if (deleted) {
 			return new ResponseEntity<>(new BrianResponse<>(), HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(new BrianResponse<>("unschedule failed"), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -328,7 +332,7 @@ public class TriggerController {
 		Trigger trigger = tb.build();
 		return trigger;
 	}
-
+	
 	private ScheduleBuilder<? extends Trigger> getSchedule(BrianTriggerRequest triggerRequest) throws ParseException {
 		switch (triggerRequest.getScheduleType()) {
 			case "oneshot":
