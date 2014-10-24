@@ -21,26 +21,13 @@ public class BrianResponse<T> {
 	}
 	
 	/**
+	 * @param success
 	 * @param message
 	 */
-	public BrianResponse(String message) {
-		this(false, message, null);
+	public BrianResponse(boolean success, String message) {
+		this(success, message, null);
 	}
 	
-	
-	/**
-	 * @param content
-	 */
-	public BrianResponse(T content) {
-		this(true, null, content);
-	}
-	
-	/**
-	 * 
-	 */
-	public BrianResponse() {
-		this(true, null, null);
-	}
 	
 	public boolean isSuccess() {
 		return success;
