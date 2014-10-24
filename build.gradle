@@ -45,7 +45,7 @@ ext {
 	guavaVersion = '15.0'
 	gsonVersion = '2.2.2'
 	baseunitsVersion = '2.11'
-	awsJavaSdkVersion = '1.8.9.1'
+	awsJavaSdkVersion = '1.9.2'
 	jettyVersion = '9.0.4.v20130625'
 }
 
@@ -122,7 +122,7 @@ dependencies {
 	compile "com.google.guava:guava:$guavaVersion"
 	compile "commons-dbcp:commons-dbcp:1.4"
 	compile "com.google.code.gson:gson:$gsonVersion"
-	compile "com.amazonaws:aws-java-sdk:$awsJavaSdkVersion"
+	compile "com.amazonaws:aws-java-sdk-sns:$awsJavaSdkVersion"
 	compile "org.quartz-scheduler:quartz:2.2.0"
 	compile "jp.xet:baseunits:$baseunitsVersion"
 	
