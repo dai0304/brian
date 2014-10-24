@@ -19,6 +19,7 @@ import static org.quartz.TriggerBuilder.newTrigger;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -60,6 +61,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.amazonaws.services.sns.AmazonSNS;
 import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -138,6 +140,36 @@ public class TriggerController {
 		
 		logger.info("  result = {}", triggerNames);
 		return new BrianResponse<List<String>>(true, "ok", triggerNames);
+	}
+	
+	/**
+	 * Delete specified triggerGroup (belonging triggers).
+	 * 
+	 * @param triggerGroupName trigger group name
+	 * @return wherther the trigger is removed
+	 * @throws SchedulerException
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/triggers/{triggerGroupName}/", method = RequestMethod.DELETE)
+	public ResponseEntity<?> deleteTriggerGroup(@PathVariable("triggerGroupName") String triggerGroupName)
+			throws SchedulerException {
+		logger.info("deleteTriggerGroup {}", triggerGroupName);
+		
+		List<String> triggersFailed = new ArrayList<>();
+		
+		List<String> triggerNames = getTriggerNames(triggerGroupName).getContent();
+		for (String triggerName : triggerNames) {
+			TriggerKey triggerKey = TriggerKey.triggerKey(triggerName, triggerGroupName);
+			boolean deleted = scheduler.unscheduleJob(triggerKey);
+			if (deleted == false) triggersFailed.add(triggerName);
+		}
+		
+		if (triggersFailed.size() == 0) {
+			return new ResponseEntity<>(new BrianResponse<>(true, "ok"), HttpStatus.OK);
+		} else {
+			String message = String.format("following trigger(s) unschedule failed: %s", Joiner.on(", ").join(triggersFailed));
+			return new ResponseEntity<>(new BrianResponse<>(false, message), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 	
 	/**
