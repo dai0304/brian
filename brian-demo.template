@@ -1,14 +1,10 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "Portnoy environment template",
+  "Description": "Brian environment demo template",
   "Parameters": {
     "KeyName": {
       "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances",
-      "Type": "String",
-      "MinLength": "1",
-      "MaxLength": "64",
-      "AllowedPattern": "[-_ a-zA-Z0-9]*",
-      "ConstraintDescription": "can contain only alphanumeric characters, spaces, dashes and underscores."
+      "Type": "AWS::EC2::KeyPair::KeyName"
     },
     "DBUsername": {
       "Default": "admin",
@@ -25,44 +21,71 @@
       "NoEcho": "true",
       "MinLength": "4"
     },
-    "VPC" : {
-      "Description" : "VPC ID",
-      "Type" : "String"
-    },
-    "VPCCIDR" : {
-      "Description" : "CIDR block of VPC",
-      "Default" : "10.0.0.0/16",
-      "Type" : "String"
-    },
-    "Subnet1" : {
-      "Description" : "Subnet ID 1",
-      "Type" : "String"
-    },
-    "Subnet2" : {
-      "Description" : "Subnet ID 2",
-      "Type" : "String"
-    },
     "BrianVersion" : {
-      "Default": "0.5",
+      "Default": "0.9",
       "Description" : "Version of Brian",
       "Type" : "String"
     }
   },
   "Mappings": {
-    "AWSAmazonLinuxAMI": {
-      "us-east-1":      { "name":"Virginia",   "201303": "ami-3275ee5b", "201309": "ami-35792c5c" },
-      "us-west-2":      { "name":"Oregon",     "201303": "ami-ecbe2adc", "201309": "ami-d03ea1e0" },
-      "us-west-1":      { "name":"California", "201303": "ami-66d1fc23", "201309": "ami-687b4f2d" },
-      "eu-west-1":      { "name":"Ireland",    "201303": "ami-44939930", "201309": "ami-149f7863" },
-      "ap-southeast-1": { "name":"Singapole",  "201303": "ami-aa9ed2f8", "201309": "ami-14f2b946" },
-      "ap-southeast-2": { "name":"Sydney",     "201303": "ami-363eaf0c", "201309": "ami-a148d59b" },
-      "ap-northeast-1": { "name":"Tokyo",      "201303": "ami-173fbf16", "201309": "ami-3561fe34" },
-      "sa-east-1":      { "name":"SaoPaulo",   "201303": "ami-dd6bb0c0", "201309": "ami-9f6ec982" }
+    "AWSInstanceType2Arch" : {
+      "t2.micro"    : { "Arch" : "64HVM" },
+      "t2.small"    : { "Arch" : "64HVM" },
+      "t2.medium"   : { "Arch" : "64HVM" },
+      "m3.medium"   : { "Arch" : "64HVM" },
+      "m3.large"    : { "Arch" : "64HVM" },
+      "m3.xlarge"   : { "Arch" : "64HVM" },
+      "m3.2xlarge"  : { "Arch" : "64HVM" },
+      "c3.large"    : { "Arch" : "64HVM" },
+      "c3.xlarge"   : { "Arch" : "64HVM" },
+      "c3.2xlarge"  : { "Arch" : "64HVM" },
+      "c3.4xlarge"  : { "Arch" : "64HVM" },
+      "c3.8xlarge"  : { "Arch" : "64HVM" },
+      "r3.large"    : { "Arch" : "64HVM" },
+      "r3.xlarge"   : { "Arch" : "64HVM" },
+      "r3.2xlarge"  : { "Arch" : "64HVM" },
+      "r3.4xlarge"  : { "Arch" : "64HVM" },
+      "r3.8xlarge"  : { "Arch" : "64HVM" },
+      "i2.xlarge"   : { "Arch" : "64HVM" },
+      "i2.2xlarge"  : { "Arch" : "64HVM" },
+      "i2.4xlarge"  : { "Arch" : "64HVM" },
+      "i2.8xlarge"  : { "Arch" : "64HVM" },
+      "hs1.8xlarge" : { "Arch" : "64HVM" },
+      
+      "m1.small"    : { "Arch" : "64" },
+      "m1.medium"   : { "Arch" : "64" },
+      "m1.large"    : { "Arch" : "64" },
+      "m1.xlarge"   : { "Arch" : "64" },
+      "c1.medium"   : { "Arch" : "64" },
+      "c1.xlarge"   : { "Arch" : "64" },
+      "cc2.8xlarge" : { "Arch" : "64HVM" },
+      "m2.xlarge"   : { "Arch" : "64" },
+      "m2.2xlarge"  : { "Arch" : "64" },
+      "m2.4xlarge"  : { "Arch" : "64" },
+      "cr1.8xlarge" : { "Arch" : "64HVM" },
+      "hi1.4xlarge" : { "Arch" : "64HVM" },
+      "t1.micro"    : { "Arch" : "64" }
+    },
+
+    "AWSRegionArch2AMI201409" : {
+      "us-east-1"      : { "64" : "ami-50842d38", "64HVM" : "ami-08842d60" },
+      "us-west-2"      : { "64" : "ami-af86c69f", "64HVM" : "ami-8786c6b7" },
+      "us-west-1"      : { "64" : "ami-c7a8a182", "64HVM" : "ami-cfa8a18a" },
+      "eu-west-1"      : { "64" : "ami-aa8f28dd", "64HVM" : "ami-748e2903" },
+      "ap-southeast-1" : { "64" : "ami-20e1c572", "64HVM" : "ami-d6e1c584" },
+      "ap-northeast-1" : { "64" : "ami-21072820", "64HVM" : "ami-35072834" },
+      "ap-southeast-2" : { "64" : "ami-8b4724b1", "64HVM" : "ami-fd4724c7" },
+      "sa-east-1"      : { "64" : "ami-9d6cc680", "64HVM" : "ami-956cc688" }
     },
     "StackConfig" : {
-      "BastionServer": { "InstanceType" : "t1.micro" },
-      "BrianServer"  : { "InstanceType" : "t1.micro" },
-      "DBServer"     : { "InstanceType" : "db.t1.micro", "AllocatedStorage" : "5" }
+      "CIDR": {
+        "VPC" : "10.0.0.0/16",
+        "Subnet1" : "10.0.0.0/24",
+        "Subnet2" : "10.0.1.0/24"
+      },
+      "BastionServer": { "InstanceType" : "t2.micro" },
+      "BrianServer"  : { "InstanceType" : "t2.micro" },
+      "DBServer"     : { "InstanceType" : "db.t2.micro", "AllocatedStorage" : "5" }
     }
   },
   "Resources": {
@@ -110,19 +133,81 @@
       }
     },
 
-
-    "VPCDefaultSecurityGroup" : {
-      "Type" : "AWS::EC2::SecurityGroup",
+    "VPC" : {
+      "Type" : "AWS::EC2::VPC",
       "Properties" : {
-        "VpcId" : { "Ref" : "VPC" },
-        "GroupDescription" : "Allow all communications in VPC",
-        "SecurityGroupIngress" : [
-          { "IpProtocol" : "tcp", "FromPort" : "0", "ToPort" : "65535", "CidrIp" : { "Ref" : "VPCCIDR" }},
-          { "IpProtocol" : "udp", "FromPort" : "0", "ToPort" : "65535", "CidrIp" : { "Ref" : "VPCCIDR" }},
-          { "IpProtocol" : "icmp", "FromPort" : "-1", "ToPort" : "-1", "CidrIp" : { "Ref" : "VPCCIDR" }}
+        "CidrBlock" : { "Fn::FindInMap" : [ "StackConfig", "CIDR", "VPC" ]},
+        "EnableDnsSupport" : "true",
+        "EnableDnsHostnames" : "true",
+        "InstanceTenancy" : "default",
+        "Tags": [
+          { "Key" : "Name", "Value": { "Ref" : "AWS::StackName" } }
         ]
       }
     },
+    "InternetGateway" : {
+      "Type" : "AWS::EC2::InternetGateway"
+    },
+    "AttachGateway" : {
+      "Type" : "AWS::EC2::VPCGatewayAttachment",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "InternetGatewayId" : { "Ref" : "InternetGateway" }
+      }
+    },
+    "PublicRouteTable" : {
+      "Type" : "AWS::EC2::RouteTable",
+      "DependsOn" : "AttachGateway",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" }
+      }
+    },
+    "PublicRoute" : {
+      "Type" : "AWS::EC2::Route",
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "PublicRouteTable" },
+        "DestinationCidrBlock" : "0.0.0.0/0",
+        "GatewayId" : { "Ref" : "InternetGateway" }
+      }
+    },
+    "Subnet1" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref": "VPC" },
+        "AvailabilityZone" : { "Fn::Select" : [ "0", { "Fn::GetAZs" : { "Ref" : "AWS::Region" }}]},
+        "CidrBlock" : { "Fn::FindInMap" : [ "StackConfig", "CIDR", "Subnet1" ]},
+        "Tags": [
+          { "Key" : "Name", "Value": { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "subnet1" ]]} }
+        ]
+      }
+    },
+    "Subnet2" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref": "VPC" },
+        "AvailabilityZone" : { "Fn::Select" : [ "1", { "Fn::GetAZs" : { "Ref" : "AWS::Region" }}]},
+        "CidrBlock" : { "Fn::FindInMap" : [ "StackConfig", "CIDR", "Subnet2" ]},
+        "Tags": [
+          { "Key" : "Name", "Value": { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "subnet2" ]]} }
+        ]
+      }
+    },
+    "Subnet1RouteTableAssociation" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "Subnet1" },
+        "RouteTableId" : { "Ref" : "PublicRouteTable" }
+      }
+    },
+    "Subnet2RouteTableAssociation" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "Subnet2" },
+        "RouteTableId" : { "Ref" : "PublicRouteTable" }
+      }
+    },
+
+
     "SSHSecurityGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
@@ -130,24 +215,10 @@
         "GroupDescription" : "Enable SSH access via port 22",
         "SecurityGroupIngress" : [
           { "IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : "0.0.0.0/0" }
+        ],
+        "Tags": [
+          { "Key" : "Name", "Value": { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "ssh" ]]} }
         ]
-      }
-    },
-    "MySQLSecurityGroup" : {
-      "Type" : "AWS::EC2::SecurityGroup",
-      "Properties" : {
-        "VpcId" : { "Ref" : "VPC" },
-        "GroupDescription" : "Enable MySQL access via port 3306 from VPC",
-        "SecurityGroupIngress" : [
-          { "IpProtocol" : "tcp", "FromPort" : "3306", "ToPort" : "3306", "CidrIp" : { "Ref" : "VPCCIDR" }}
-        ]
-      }
-    },
-    "BrianSecurityGroup" : {
-      "Type" : "AWS::EC2::SecurityGroup",
-      "Properties" : {
-        "VpcId" : { "Ref" : "VPC" },
-        "GroupDescription" : "Security Group for Brian instances"
       }
     },
 
@@ -165,13 +236,13 @@
         "InstanceType": { "Fn::FindInMap" : [ "StackConfig", "BastionServer", "InstanceType" ]},
         "KeyName": { "Ref": "KeyName" },
         "SubnetId": { "Ref" : "Subnet1" },
-        "ImageId": { "Fn::FindInMap": [ "AWSAmazonLinuxAMI", { "Ref": "AWS::Region" }, "201309" ]},
+        "ImageId": { "Fn::FindInMap" : [ "AWSRegionArch2AMI201409", { "Ref" : "AWS::Region" }, { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Fn::FindInMap" : [ "StackConfig", "BastionServer", "InstanceType" ]}, "Arch" ] } ] },
         "SecurityGroupIds" : [
-          { "Ref" : "SSHSecurityGroup" },
-          { "Ref" : "VPCDefaultSecurityGroup" }
+          { "Fn::GetAtt" : [ "VPC", "DefaultSecurityGroup" ] },
+          { "Ref" : "SSHSecurityGroup" }
         ],
         "Tags": [
-          { "Key" : "Name", "Value": "Bastion" }
+          { "Key" : "Name", "Value": { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "bastion" ]]} }
         ]
       }
     },
@@ -221,11 +292,14 @@
         "DBParameterGroupName" : { "Ref" : "DBParamGroup" },
         "DBSubnetGroupName" : { "Ref" : "DBSubnetGroup" },
         "VPCSecurityGroups" : [
-          { "Ref" : "VPCDefaultSecurityGroup" },
-          { "Ref" : "MySQLSecurityGroup" }
+          { "Fn::GetAtt" : [ "VPC", "DefaultSecurityGroup" ] }
+        ],
+        "Tags": [
+          { "Key" : "Name", "Value": { "Ref" : "AWS::StackName" } }
         ]
       }
     },
+    
     "BrianTopic" : {
       "Type" : "AWS::SNS::Topic",
       "Properties" : {
@@ -234,11 +308,9 @@
         ]
       }
     },
-
     "WorkerQueue" : {
       "Type" : "AWS::SQS::Queue"
     },
-    
     "WorkerQueuePolicy" : {
       "Type" : "AWS::SQS::QueuePolicy",
       "Properties" : {
@@ -269,8 +341,8 @@
     "BrianApplication" : {
       "Type" : "AWS::ElasticBeanstalk::Application",
       "Properties" : {
-        "ApplicationName" : "brian",
-        "Description" : "brian"
+        "ApplicationName" : { "Ref" : "AWS::StackName" },
+        "Description" : "brian demo application"
       }
     },
     "BrianAppVer" : {
@@ -290,7 +362,7 @@
       "Properties" : {
         "ApplicationName" : { "Ref" : "BrianApplication" },
         "Description" : "brian configuration template",
-        "SolutionStackName" : "64bit Amazon Linux 2014.03 v1.0.2 running Tomcat 7 Java 7",
+        "SolutionStackName" : "64bit Amazon Linux 2014.09 v1.0.0 running Tomcat 8 Java 8",
         "OptionSettings" : [
           { "Namespace" : "aws:ec2:vpc", "OptionName" : "VPCId", "Value" : { "Ref" : "VPC" } },
           { "Namespace" : "aws:ec2:vpc", "OptionName" : "Subnets", "Value" : { "Fn::Join" :[ ",", [
@@ -306,11 +378,11 @@
           
           { "Namespace" : "aws:autoscaling:launchconfiguration", "OptionName" : "InstanceType", "Value" : { "Fn::FindInMap" : [ "StackConfig", "BrianServer", "InstanceType" ]}},
           { "Namespace" : "aws:autoscaling:launchconfiguration", "OptionName" : "EC2KeyName",   "Value" : { "Ref" : "KeyName" }},
-          { "Namespace" : "aws:autoscaling:launchconfiguration", "OptionName" : "SecurityGroups", "Value" : { "Ref" : "VPCDefaultSecurityGroup" }},
+          { "Namespace" : "aws:autoscaling:launchconfiguration", "OptionName" : "SecurityGroups", "Value" : { "Fn::GetAtt" : [ "VPC", "DefaultSecurityGroup" ] }},
           { "Namespace" : "aws:autoscaling:launchconfiguration", "OptionName" : "IamInstanceProfile", "Value" : { "Ref" : "BrianProfile" }},
-          { "Namespace" : "aws:autoscaling:launchconfiguration", "OptionName" : "SSHSourceRestriction", "Value" : { "Fn::Join" : [ "", ["tcp,22,22,", { "Ref" : "VPCCIDR" }]]}},
+          { "Namespace" : "aws:autoscaling:launchconfiguration", "OptionName" : "SSHSourceRestriction", "Value" : { "Fn::Join" : [ "", ["tcp,22,22,", { "Fn::FindInMap" : [ "StackConfig", "CIDR", "VPC" ]}]]}},
           
-          { "Namespace" : "aws:autoscaling:asg", "OptionName" : "MinSize", "Value" : "2" },
+          { "Namespace" : "aws:autoscaling:asg", "OptionName" : "MinSize", "Value" : "1" },
           { "Namespace" : "aws:autoscaling:asg", "OptionName" : "MaxSize", "Value" : "4" },
           
           { "Namespace" : "aws:elasticbeanstalk:application", "OptionName" : "Application Healthcheck URL", "Value" : "/healthcheck" },
@@ -331,7 +403,7 @@
       "Properties" : {
         "ApplicationName" : { "Ref" : "BrianApplication" },
         "Description" : "Brian environment.",
-        "EnvironmentName" : "brian-demo",
+        "EnvironmentName" : { "Ref" : "AWS::StackName" },
         "TemplateName" : { "Ref" : "BrianConfig" },
         "VersionLabel" : { "Ref" : "BrianAppVer" }
       }

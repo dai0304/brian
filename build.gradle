@@ -2,51 +2,37 @@ buildscript {
 	repositories {
 		mavenCentral()
 		maven { url 'http://public-maven.classmethod.info/release' }
+		maven { url "http://repo.spring.io/release" }
 	}
 	dependencies {
 		classpath 'org.hibernate.build.gradle:version-injection-plugin:1.0.0'
-		classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.7.0'
 		classpath 'jp.classmethod.aws:gradle-aws-plugin:0.11'
+		classpath 'org.springframework.boot:spring-boot-gradle-plugin:1.1.8.RELEASE'
 	}
 }
-
-apply plugin: 'java'
-apply plugin: 'war'
-apply plugin: 'eclipse'
-apply plugin: 'version-injection'
-apply plugin: 'license'
+plugins {
+	id "com.github.hierynomus.license" version "0.11.0"
+}
 
 defaultTasks 'clean', 'build'
 
+
 // ======== Generic ========
 group = 'jp.classmethod.aws'
-version = '0.8'
+version = '0.9'
 ext {
 	artifactId = 'brian'
 	defaultEncoding = 'UTF-8'
 }
 
+
 // ======== Java ========
-sourceCompatibility = targetCompatibility = 1.7
+apply plugin: 'java'
+apply plugin: 'war'
+apply plugin: 'eclipse'
+sourceCompatibility = targetCompatibility = 1.8
 tasks.withType(AbstractCompile) each {
 	it.options.encoding = ext.defaultEncoding
-}
-
-ext {
-	junitVersion = '4.11'
-	hamcrestVersion = '1.3'
-	mockitoCoreVersion = '1.9.5'
-
-	slf4jVersion = '1.7.7'
-	logbackVersion = '1.1.2'
-	
-	springVersion = '3.2.4.RELEASE'
-	mysqlVersion = '5.1.22'
-	guavaVersion = '15.0'
-	gsonVersion = '2.2.2'
-	baseunitsVersion = '2.11'
-	awsJavaSdkVersion = '1.9.2'
-	jettyVersion = '9.0.4.v20130625'
 }
 
 compileJava {
@@ -61,46 +47,35 @@ test {
 	}
 }
 
-// version injection
-versionInjection {
-	into('jp.classmethod.aws.brian.Version', 'getVersionString')
-}
 
-// create source and javadoc bundles
-task sourcesJar(type: Jar, dependsOn: classes) {
-	classifier = 'sources'
-	from sourceSets.main.allSource
-}
+// ======== dependency management ========
+ext {
+	// test dependencies
+	junitVersion = '4.11'
+	hamcrestVersion = '1.3'
+	mockitoCoreVersion = '1.9.5'
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-	classifier = 'javadoc'
-	from javadoc.destinationDir
-}
-
-artifacts {
-	archives sourcesJar
-	archives javadocJar
-}
-
-repositories {
-	mavenCentral()
-	maven {
-		url "http://repo.springsource.org/release"
-	}
-	maven {
-		// for log4jdbc-remix
-		url "https://oss.sonatype.org/content/repositories/releases"
-	}
-	maven {
-		// for baseunits
-		url "http://maven.xet.jp/release"
-	}
+	// Java spec
+	servletApiVersion = '3.1.0'
+	
+	// loggers
+	slf4jVersion = '1.7.7'
+	logbackVersion = '1.1.2'
+	
+	// others
+	springVersion = '4.1.1.RELEASE'
+	springBootVersion = '1.1.8.RELEASE'
+	mysqlVersion = '5.1.22'
+	guavaVersion = '18.0'
+	quartzVersion = '2.2.0'
+	gsonVersion = '2.2.2'
+	baseunitsVersion = '2.11'
+	awsJavaSdkVersion = '1.9.2'
 }
 
 configurations {
-	jettyServer
+	providedRuntime
 }
-
 dependencies {
 	// Logging
 	compile "org.slf4j:slf4j-api:$slf4jVersion"
@@ -116,6 +91,7 @@ dependencies {
 	compile "org.springframework:spring-tx:$springVersion"
 	compile "org.springframework:spring-jdbc:$springVersion"
 	compile "org.springframework:spring-webmvc:$springVersion"
+	compile "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
 	
 	// Other
 	compile "mysql:mysql-connector-java:$mysqlVersion"
@@ -123,13 +99,12 @@ dependencies {
 	compile "commons-dbcp:commons-dbcp:1.4"
 	compile "com.google.code.gson:gson:$gsonVersion"
 	compile "com.amazonaws:aws-java-sdk-sns:$awsJavaSdkVersion"
-	compile "org.quartz-scheduler:quartz:2.2.0"
+	compile "org.quartz-scheduler:quartz:$quartzVersion"
 	compile "jp.xet:baseunits:$baseunitsVersion"
 	
 	// Servlet API
-	providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
-	jettyServer "org.eclipse.jetty:jetty-server:$jettyVersion"
-	jettyServer "org.eclipse.jetty:jetty-ant:$jettyVersion"
+	providedCompile "javax.servlet:javax.servlet-api:$servletApiVersion"
+	providedRuntime "org.springframework.boot:spring-boot-starter-tomcat:1.1.8.RELEASE"
 	
 	// Testing
 	testCompile "junit:junit:$junitVersion"
@@ -137,64 +112,61 @@ dependencies {
 	testCompile "org.springframework:spring-test:$springVersion"
 }
 
-// ======== WAR ========
-
-ext {
-	jettyStop = '9999'
-	jettyStopKey = 'jettystop'
-	port = '8080'
-	contextPath = '/'
-}
-
-task setSystemProperties << {
-	assert project.hasProperty('JDBC_CONNECTION_STRING'): "JDBC_CONNECTION_STRING is required"
-	assert project.hasProperty('DB_USERNAME'): "DB_USERNAME is required"
-	assert project.hasProperty('DB_PASSWORD'): "DB_PASSWORD is required"
-	assert project.hasProperty('BRIAN_TOPIC_ARN'): "BRIAN_TOPIC_ARN is required"
-	
-	System.setProperty 'JDBC_CONNECTION_STRING', project.JDBC_CONNECTION_STRING
-	System.setProperty 'DB_USERNAME', project.DB_USERNAME
-	System.setProperty 'DB_PASSWORD', project.DB_PASSWORD
-	System.setProperty 'BRIAN_TOPIC_ARN', project.BRIAN_TOPIC_ARN
-	System.setProperty 'aws.accessKeyId', project.awsAccessKey
-	System.setProperty 'aws.secretKey', project.awsSecretKey
-	
-	if (project.hasProperty('springProfilesActive')) {
-		System.setProperty 'spring.profiles.active', project.springProfilesActive
+repositories {
+	mavenCentral()
+	maven {
+		url "http://repo.spring.io/release"
 	}
-	if (project.hasProperty('logbackConfigurationFile')) {
-		System.setProperty 'logback.configurationFile', project.logbackConfigurationFile
+	maven {
+		// for log4jdbc-remix
+		url "https://oss.sonatype.org/content/repositories/releases"
+	}
+	maven {
+		// for baseunits
+		url "http://maven.xet.jp/release"
 	}
 }
 
-ant {
-	taskdef(name: 'jettyRun', classname: 'org.eclipse.jetty.ant.JettyRunTask', classpath: configurations.jettyServer.asPath)
-	taskdef(name: 'jettyStop', classname: 'org.eclipse.jetty.ant.JettyStopTask', classpath: configurations.jettyServer.asPath)
-}
-[
-	task(jettyRun(dependsOn: [classes, setSystemProperties])) << {
-		ant.jettyRun(stopPort: jettyStop, stopKey: jettyStopKey, jettyPort: port, scanIntervalSeconds: 3) {
-			webApp(war: webAppDir, contextPath: contextPath, parentLoaderPriority: true,
-				extraClasspath: org.gradle.util.CollectionUtils.join(",", configurations.compile.files))
-		}
-	},
-	task(jettyRunWar(dependsOn: [war, setSystemProperties])) << {
-		ant.jettyRun(jettyPort: port) {
-			webApp(war: war.archivePath, contextPath: contextPath)
-		}
-	},
-	task(jettyRunAsDaemon(dependsOn: [classes, setSystemProperties])) << {
-		ant.jettyRun(daemon: true, stopPort: jettyStop, stopKey: jettyStopKey, jettyPort: port, scanIntervalSeconds: 3) {
-			webApp(war: webAppDir, contextPath: contextPath, parentLoaderPriority: true,
-				extraClasspath: org.gradle.util.CollectionUtils.join(",", configurations.compile.files))
-		}
-	},
-	task(jettyStop(dependsOn: [classes, setSystemProperties])) << {
-		ant.jettyStop(stopPort: jettyStop, stopKey: jettyStopKey) {
-		}
-	}
-].each { it.group = 'Local' }
 
+// ======== version injection ========
+apply plugin: 'version-injection'
+
+versionInjection {
+	into('jp.classmethod.aws.brian.Version', 'getVersionString')
+}
+
+// ======== license headers ========
+apply plugin: 'license'
+
+license {
+	ext.year = Calendar.getInstance().get(Calendar.YEAR)
+	header rootProject.file('copyright/HEADER')
+	strictCheck true
+	mapping {
+		java = 'SLASHSTAR_STYLE'
+	}
+	exclude '**/*.json'
+}
+
+
+// ======== create source and javadoc bundles ========
+task sourcesJar(type: Jar, dependsOn: classes) {
+	classifier = 'sources'
+	from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+	classifier = 'javadoc'
+	from javadoc.destinationDir
+}
+
+artifacts {
+	archives sourcesJar
+	archives javadocJar
+}
+
+
+// ======== local boot ========
 sourceSets.main.output.classesDir = 'src/main/webapp/WEB-INF/classes'
 sourceSets.main.output.resourcesDir = 'src/main/webapp/WEB-INF/classes'
 
@@ -202,8 +174,40 @@ clean {
 	delete << 'src/main/webapp/WEB-INF/classes'
 }
 
-// ======== release tasks ========
+apply plugin: 'spring-boot'
+
+bootRun {
+	systemProperty('JDBC_CONNECTION_STRING', project.JDBC_CONNECTION_STRING)
+	systemProperty('DB_USERNAME', project.DB_USERNAME)
+	systemProperty('DB_PASSWORD', project.DB_PASSWORD)
+	systemProperty('BRIAN_TOPIC_ARN', project.BRIAN_TOPIC_ARN)
+	systemProperty('aws.accessKeyId', project.awsAccessKey)
+	systemProperty('aws.secretKey', project.awsSecretKey)
+	
+	if (project.hasProperty('springProfilesActive')) {
+		systemProperty('spring.profiles.active', project.springProfilesActive)
+	}
+	if (project.hasProperty('logbackConfigurationFile')) {
+		systemProperty('logback.configurationFile', project.logbackConfigurationFile)
+	}
+}
+
+
+// ======== packaging ========
+war {
+	manifest {
+		attributes(
+			"Implementation-Title": project.name,
+			"Implementation-Version": version,
+			"Implementation-Timestamp": new Date()
+		)
+	}
+}
+
+
+// ======== release ========
 apply plugin: 'aws'
+
 aws {
 	assert project.hasProperty('awsAccessKeyForRelease') && project.hasProperty('awsSecretKeyForRelease'): "AWS credential is required"
 	accessKeyId awsAccessKeyForRelease
@@ -212,6 +216,7 @@ aws {
 }
 
 apply plugin: 'aws-s3'
+
 task uploadWar(type: jp.classmethod.aws.gradle.s3.AmazonS3FileUploadTask, dependsOn: war) {
 	bucketName 'cm-public-eb-applications'
 	key "${artifactId}/${artifactId}-${version}.war"
@@ -224,15 +229,6 @@ task uploadArchives(dependsOn: uploadWar)
 
 // ======== wrapper ========
 task wrapper(type: Wrapper) {
-	gradleVersion = '2.0'
+	gradleVersion = '2.1'
 }
 
-// ======== License =======
-license {
-	ext.year = Calendar.getInstance().get(Calendar.YEAR)
-	header rootProject.file('copyright/HEADER')
-	strictCheck true
-	mapping {
-		java = 'SLASHSTAR_STYLE'
-	}
-}
