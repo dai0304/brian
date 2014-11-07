@@ -52,5 +52,6 @@ public class BrianSpringInitializer implements WebApplicationInitializer {
 		dispatcher.addMapping("/");
 		
 		InitializationUtil.logAllProperties();
+		InitializationUtil.validateExistRequiredSystemProperties(BrianApplication.REQUIRED_SYSTEM_PROPERTIES);
 	}
 }

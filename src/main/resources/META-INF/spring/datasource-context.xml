@@ -31,7 +31,7 @@
   <!-- Generic JDBC components -->
   <tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="false" />
 
-  <bean id="basicDataSource" autowire-candidate="false" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+  <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
     <property name="driverClassName" value="com.mysql.jdbc.Driver" />
     <property name="url" value="#{systemProperties['JDBC_CONNECTION_STRING']}" />
     <property name="username" value="#{systemProperties['PARAM1'] ?: systemProperties['DB_USERNAME']}" />
@@ -46,6 +46,7 @@
     <property name="dataSource" ref="dataSource" />
   </bean>
 
+<!--
   <beans profile="!development">
     <bean id="dataSource" primary="true" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">
       <constructor-arg ref="basicDataSource" />
@@ -61,4 +62,5 @@
     </bean>
     <bean class="net.sf.log4jdbc.MySqlRdbmsSpecifics" />
   </beans>
+-->
 </beans>

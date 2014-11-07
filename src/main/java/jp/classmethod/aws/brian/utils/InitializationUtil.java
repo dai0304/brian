@@ -15,14 +15,21 @@
  */
 package jp.classmethod.aws.brian.utils;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Utiliti class to print all system properties.
+ * Utiliti class for application initialization.
  * 
  * @since 1.0
  * @version $Id$
@@ -33,13 +40,47 @@ public class InitializationUtil {
 	private static Logger logger = LoggerFactory.getLogger(InitializationUtil.class);
 	
 	
+	/**
+	 * Log all system properties.
+	 * 
+	 * <p>However, if the key string contains {@code secret}, the value will be masked.</p>
+	 * 
+	 * @since 1.0
+	 */
 	public static void logAllProperties() {
 		logger.info("======== System Properties ========");
-		Map<Object, Object> sortedProps = new TreeMap<>(System.getProperties());
-		for (Map.Entry<Object, Object> e : sortedProps.entrySet()) {
-			String key = e.getKey().toString();
-			logger.info("{} = {}", key, key.toLowerCase().contains("secret") ? "********" : e.getValue());
+		
+		try {
+		System.getProperties().entrySet().stream()
+			.sorted(Comparator.comparing(e -> e.getKey().toString()))
+			.map(e -> {
+				String key = e.getKey().toString();
+				Object value = e.getKey().toString().toLowerCase().contains("secret") ? "********" : e.getValue();
+				return String.format("%s = %s", key, value);
+			})
+			.forEach((String message) -> logger.info(message));
+		} catch (Exception e) {
+			logger.info("unexpected", e);
 		}
+		
 		logger.info("===================================");
+	}
+	
+	/**
+	 * Validate if all system properties required by application is specified.
+	 * 
+	 * @param requiredSystemProperties
+	 * @throws IllegalStateException if exists insufficient properties
+	 * @since 1.0
+	 */
+	public static void validateExistRequiredSystemProperties(Collection<String> requiredSystemProperties) {
+		Properties properties = System.getProperties();
+		String shortageProperties = requiredSystemProperties.stream()
+			.parallel()
+			.filter(key -> properties.containsKey(key) == false)
+			.collect(Collectors.joining(", "));
+		if (shortageProperties.isEmpty() == false) {
+			throw new IllegalStateException("required properties are not specified: " + shortageProperties);
+		}
 	}
 }
