@@ -15,15 +15,10 @@
  */
 package jp.classmethod.aws.brian.utils;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,14 +46,14 @@ public class InitializationUtil {
 		logger.info("======== System Properties ========");
 		
 		try {
-		System.getProperties().entrySet().stream()
-			.sorted(Comparator.comparing(e -> e.getKey().toString()))
-			.map(e -> {
-				String key = e.getKey().toString();
-				Object value = e.getKey().toString().toLowerCase().contains("secret") ? "********" : e.getValue();
-				return String.format("%s = %s", key, value);
-			})
-			.forEach((String message) -> logger.info(message));
+			System.getProperties().entrySet().stream()
+				.sorted(Comparator.comparing(e -> e.getKey().toString()))
+				.map(e -> {
+					String key = e.getKey().toString();
+					Object value = e.getKey().toString().toLowerCase().contains("secret") ? "********" : e.getValue();
+					return String.format("%s = %s", key, value);
+				})
+				.forEach(logger::info);
 		} catch (Exception e) {
 			logger.info("unexpected", e);
 		}

@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
 /**
- * TODO for daisuke
+ * Custom {@link ObjectMapper} implementation for Brian.
  * 
  * @since 1.0
  * @version $Id$
@@ -38,12 +38,12 @@ public class CustomObjectMapper extends ObjectMapper {
 	
 	
 	/**
-	 * インスタンスを生成する。
+	 * Instantiate.
 	 */
 	public CustomObjectMapper() {
-		SimpleModule portnoyModule = new SimpleModule("brianModule", VERSION);
-		portnoyModule.addSerializer(new TriggerSerializer());
-		registerModule(portnoyModule);
+		SimpleModule brianModule = new SimpleModule("brianModule", VERSION);
+		brianModule.addSerializer(new TriggerSerializer());
+		registerModule(brianModule);
 		
 		configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		

@@ -35,7 +35,7 @@ public class BrianSpringInitializer implements WebApplicationInitializer {
 	
 	@Override
 	public void onStartup(ServletContext container) throws ServletException {
-		logger.info("Starting up portnoy-webcron v{}", Version.getVersionString());
+		logger.info("Starting up brian v{}", Version.getVersionString());
 		
 		XmlWebApplicationContext rootContext = new XmlWebApplicationContext();
 		rootContext.setConfigLocations(new String[] {
