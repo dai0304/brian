@@ -1,0 +1,87 @@
+// -*- coding: utf-8; mode: groovy -*-
+
+
+// ======== Generic ========
+ext.artifactId = 'brian-sdk'
+defaultTasks 'clean', 'build'
+apply plugin: 'maven'
+
+// ======== dependency ========
+configurations {
+	deployerJars
+}
+
+dependencies {
+	// loggers
+	compile "org.slf4j:slf4j-api:$slf4jVersion"
+	compile "org.slf4j:jul-to-slf4j:$slf4jVersion"
+	compile "ch.qos.logback:logback-classic:$logbackVersion"
+	compile 'org.apache.httpcomponents:httpclient:4.3.6'
+	
+	compile 'com.fasterxml.jackson.core:jackson-databind:2.3.2'
+	
+	// Testing
+	testCompile "junit:junit:$junitVersion"
+	testCompile "org.mockito:mockito-core:$mockitoCoreVersion"
+	
+//	deployerJars 'org.springframework.build.aws:org.springframework.build.aws.maven:3.0.0.RELEASE'
+	deployerJars 'org.springframework.build:aws-maven:5.0.0.RELEASE'
+}
+
+repositories {
+	mavenCentral()
+}
+
+
+// ======== version injection ========
+apply plugin: 'version-injection'
+
+versionInjection {
+	into('jp.classmethod.aws.brian.BrianClient', 'getVersionString')
+}
+
+
+// ======== packaging ========
+jar {
+	manifest {
+		attributes(
+			"Implementation-Title": project.name,
+			"Implementation-Version": version,
+			"Implementation-Timestamp": new Date()
+		)
+	}
+}
+
+
+// ======== release ========
+uploadArchives {
+	repositories {
+		mavenDeployer {
+			configuration = configurations.deployerJars
+			
+			repository(url: 's3://public-maven.classmethod.info/release') {
+				authentication(userName: project.awsAccessKeyForRelease, password: project.awsSecretKeyForRelease)
+			}
+			snapshotRepository(url: 's3://public-maven.classmethod.info/snapshot') {
+				authentication(userName: project.awsAccessKeyForRelease, password: project.awsSecretKeyForRelease)
+			}
+
+			pom.groupId = project.group
+			pom.artifactId = project.ext.artifactId
+			pom.version = project.version
+		}
+	}
+}
+[install.repositories.mavenInstaller, uploadArchives.repositories.mavenDeployer]*.pom*.whenConfigured { pom ->
+	pom.project {
+		inceptionYear '2014'
+		packaging 'jar'
+		licenses {
+			license {
+				name 'The Apache Software License, Version 2.0'
+				url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+				distribution 'repo'
+			}
+		}
+	}
+}

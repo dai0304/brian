@@ -1,0 +1,135 @@
+// -*- coding: utf-8; mode: groovy -*-
+
+defaultTasks 'clean', 'build'
+
+
+// ======== Generic ========
+ext.artifactId = 'brian-server'
+defaultTasks 'clean', 'build'
+
+
+// ======== Java ========
+apply plugin: 'java'
+apply plugin: 'war'
+apply plugin: 'eclipse'
+sourceCompatibility = targetCompatibility = 1.8
+tasks.withType(AbstractCompile) each {
+	it.options.encoding = ext.defaultEncoding
+}
+
+compileJava {
+	options.compilerArgs << '-Xlint:deprecation'
+}
+
+test {
+	exclude '**/*$*', '**/*Tests.class', '**/examples/**'
+	reports {
+		html.enabled = true
+		junitXml.outputPerTestCase = false
+	}
+}
+
+
+// ======== dependency management ========
+
+configurations {
+	providedRuntime
+}
+dependencies {
+	// Logging
+	compile "org.slf4j:slf4j-api:$slf4jVersion"
+	compile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
+	compile "org.slf4j:log4j-over-slf4j:$slf4jVersion"
+	compile "ch.qos.logback:logback-classic:$logbackVersion"
+	compile ('org.lazyluke:log4jdbc-remix:0.2.7') {
+		exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+	}
+	
+	// Spring
+	compile "org.springframework:spring-context-support:$springVersion"
+	compile "org.springframework:spring-tx:$springVersion"
+	compile "org.springframework:spring-jdbc:$springVersion"
+	compile "org.springframework:spring-webmvc:$springVersion"
+	compile "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
+	
+	// Other
+	compile "mysql:mysql-connector-java:$mysqlVersion"
+	compile "com.google.guava:guava:$guavaVersion"
+	compile "commons-dbcp:commons-dbcp:1.4"
+	compile "com.google.code.gson:gson:$gsonVersion"
+	compile "com.amazonaws:aws-java-sdk-sns:$awsJavaSdkVersion"
+	compile "org.quartz-scheduler:quartz:$quartzVersion"
+	compile "jp.xet:baseunits:$baseunitsVersion"
+	compile project(':brian-sdk')
+	
+	// Servlet API
+	providedCompile "javax.servlet:javax.servlet-api:$servletApiVersion"
+	providedRuntime "org.springframework.boot:spring-boot-starter-tomcat:1.1.8.RELEASE"
+	
+	// Testing
+	testCompile "junit:junit:$junitVersion"
+	testCompile "org.mockito:mockito-core:$mockitoCoreVersion"
+	testCompile "org.springframework:spring-test:$springVersion"
+}
+
+repositories {
+	mavenCentral()
+	maven {
+		url "http://repo.spring.io/release"
+	}
+	maven {
+		// for log4jdbc-remix
+		url "https://oss.sonatype.org/content/repositories/releases"
+	}
+	maven {
+		// for baseunits
+		url "http://maven.xet.jp/release"
+	}
+}
+
+
+// ======== version injection ========
+apply plugin: 'version-injection'
+
+versionInjection {
+	into('jp.classmethod.aws.brian.Version', 'getVersionString')
+}
+
+
+// ======== packaging ========
+war {
+	manifest {
+		attributes(
+			"Implementation-Title": project.name,
+			"Implementation-Version": version,
+			"Implementation-Timestamp": new Date()
+		)
+	}
+}
+
+
+// ======== release ========
+apply plugin: 'aws-s3'
+
+aws {
+	assert project.hasProperty('awsAccessKeyForRelease') && project.hasProperty('awsSecretKeyForRelease'): "AWS credential is required"
+	accessKeyId project.awsAccessKeyForRelease
+	secretKey project.awsSecretKeyForRelease
+	region 'ap-northeast-1'
+}
+
+task uploadWar(type: jp.classmethod.aws.gradle.s3.AmazonS3FileUploadTask, dependsOn: war) {
+	bucketName 'cm-public-eb-applications'
+	key "${artifactId}/${artifactId}-${version}.war"
+	file project.war.archivePath
+	overwrite project.version.endsWith('-SNAPSHOT')
+}
+
+task uploadDemoTemplate(type: jp.classmethod.aws.gradle.s3.AmazonS3FileUploadTask) {
+	bucketName 'cm-public-eb-applications'
+	key "${artifactId}/${artifactId}-${version}.template"
+	file file('brian-demo.template')
+	overwrite project.version.endsWith('-SNAPSHOT')
+} << {
+	println "open https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-1#cstack=sn~brian-demo|turl~${resourceUrl}"
+}

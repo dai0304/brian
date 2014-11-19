@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2013-2014 Classmethod, Inc.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xsi:schemaLocation="http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+  <jdbc:initialize-database data-source="dataSource">
+    <jdbc:script location="classpath:/mysql.sql" />
+  </jdbc:initialize-database>
+
+  <!-- Generic JDBC components -->
+  <tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="false" />
+
+  <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+    <property name="driverClassName" value="com.mysql.jdbc.Driver" />
+    <property name="url" value="#{systemProperties['JDBC_CONNECTION_STRING']}" />
+    <property name="username" value="#{systemProperties['PARAM1'] ?: systemProperties['DB_USERNAME']}" />
+    <property name="password" value="#{systemProperties['PARAM2'] ?: systemProperties['DB_PASSWORD']}" />
+    <property name="validationQuery" value="SELECT 1" />
+    <property name="maxActive" value="50" />
+    <property name="maxIdle" value="10" />
+    <property name="minIdle" value="5" />
+  </bean>
+
+  <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    <property name="dataSource" ref="dataSource" />
+  </bean>
+
+<!--
+  <beans profile="!development">
+    <bean id="dataSource" primary="true" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">
+      <constructor-arg ref="basicDataSource" />
+    </bean>
+  </beans>
+  <beans profile="development">
+    <bean id="dataSource" primary="true" class="net.sf.log4jdbc.Log4jdbcProxyDataSource">
+      <constructor-arg>
+        <bean class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">
+          <constructor-arg ref="basicDataSource" />
+        </bean>
+      </constructor-arg>
+    </bean>
+    <bean class="net.sf.log4jdbc.MySqlRdbmsSpecifics" />
+  </beans>
+-->
+</beans>
