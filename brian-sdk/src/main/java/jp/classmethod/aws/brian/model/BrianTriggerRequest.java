@@ -19,10 +19,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.quartz.Trigger;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.format.annotation.DateTimeFormat.ISO;
-
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,20 +30,18 @@ public class BrianTriggerRequest {
 	private String triggerName;
 	
 	@JsonProperty
-	private String scheduleType;
+	private ScheduleType scheduleType;
 	
 	@JsonProperty
-	private int priority = Trigger.DEFAULT_PRIORITY;
+	private int priority = 5;
 	
 	@JsonProperty
 	private String description;
 	
 	@JsonProperty
-	@DateTimeFormat(iso = ISO.DATE_TIME)
 	private Date startAt;
 	
 	@JsonProperty
-	@DateTimeFormat(iso = ISO.DATE_TIME)
 	private Date endAt;
 	
 	@JsonProperty
@@ -67,11 +62,16 @@ public class BrianTriggerRequest {
 		rest.put(key, value == null ? null : value.toString());
 	}
 	
-	public String getScheduleType() {
+	@JsonAnyGetter
+	public Map<String, String> getRest() {
+		return rest;
+	}
+	
+	public ScheduleType getScheduleType() {
 		return scheduleType;
 	}
 	
-	public void setScheduleType(String scheduleType) {
+	public void setScheduleType(ScheduleType scheduleType) {
 		this.scheduleType = scheduleType;
 	}
 	
@@ -121,10 +121,6 @@ public class BrianTriggerRequest {
 	
 	public void setJobData(Map<String, Object> jobData) {
 		this.jobData = jobData;
-	}
-	
-	public Map<String, String> getRest() {
-		return rest;
 	}
 	
 	public String getTriggerName() {

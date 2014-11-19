@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
     id="imageResizeServer" version="3.0">
 
-  <display-name>Myung</display-name>
+  <display-name>BrianServer</display-name>
 
   <error-page>
     <error-code>400</error-code>

@@ -15,28 +15,9 @@
  */
 package jp.classmethod.aws.brian.model;
 
-import java.util.TimeZone;
 
-import org.quartz.CronTrigger;
-
-class BrianCronTrigger extends BrianTrigger {
+public enum ScheduleType {
 	
-	private final TimeZone timeZone;
+	cron, simple, oneshot;
 	
-	private final String cronExpression;
-	
-	
-	BrianCronTrigger(CronTrigger trigger) {
-		super(trigger);
-		timeZone = trigger.getTimeZone();
-		cronExpression = trigger.getCronExpression();
-	}
-	
-	public TimeZone getTimeZone() {
-		return timeZone;
-	}
-	
-	public String getCronExpression() {
-		return cronExpression;
-	}
 }

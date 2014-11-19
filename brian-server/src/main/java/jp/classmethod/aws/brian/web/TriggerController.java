@@ -31,6 +31,9 @@ import java.util.TimeZone;
 
 import jp.classmethod.aws.brian.model.BrianResponse;
 import jp.classmethod.aws.brian.model.BrianTriggerRequest;
+import jp.xet.baseunits.time.CalendarUtil;
+import jp.xet.baseunits.time.TimePoint;
+import jp.xet.baseunits.util.TimeZones;
 
 import org.quartz.CronExpression;
 import org.quartz.CronScheduleBuilder;
@@ -205,8 +208,10 @@ public class TriggerController {
 			Date nextFireTime = scheduler.scheduleJob(trigger);
 			logger.info("scheduled {}", triggerKey);
 			
+			SimpleDateFormat df = CalendarUtil.newSimpleDateFormat(
+					TimePoint.ISO8601_FORMAT_UNIVERSAL, Locale.US, TimeZones.UNIVERSAL);
 			Map<String, Object> map = new HashMap<>();
-			map.put("nextFireTime", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).format(nextFireTime));
+			map.put("nextFireTime", df.format(nextFireTime));
 			return new ResponseEntity<>(new BrianResponse<>(true, "created", map), HttpStatus.CREATED);
 		} catch (ParseException e) {
 			logger.warn("parse cron expression failed", e);
@@ -286,6 +291,7 @@ public class TriggerController {
 			throw new ResourceNotFoundException();
 		}
 		
+		logger.info("ok");
 		return new ResponseEntity<>(trigger, HttpStatus.OK);
 	}
 	
@@ -373,18 +379,22 @@ public class TriggerController {
 	
 	private ScheduleBuilder<? extends Trigger> getSchedule(BrianTriggerRequest triggerRequest) throws ParseException {
 		switch (triggerRequest.getScheduleType()) {
-			case "oneshot":
+			case oneshot:
 				return createOneShotSchedule(triggerRequest);
-			case "simple":
+			case simple:
 				return createSimpleSchedule(triggerRequest);
-			case "cron":
+			case cron:
 			default:
 				return createCronSchedule(triggerRequest);
 		}
 	}
 	
 	private CronScheduleBuilder createCronSchedule(BrianTriggerRequest triggerRequest) throws ParseException {
-		CronExpression cronExpression = new CronExpression(triggerRequest.getRest().get("cronEx"));
+		String cronExString = triggerRequest.getRest().get("cronEx");
+		if (cronExString == null) {
+			throw new IllegalArgumentException("cronEx is null");
+		}
+		CronExpression cronExpression = new CronExpression(cronExString);
 		
 		String timeZoneId = triggerRequest.getRest().get("timeZone");
 		if (timeZoneId != null) {

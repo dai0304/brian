@@ -350,10 +350,10 @@
       "DeletionPolicy" : "Retain",
       "Properties" : {
         "ApplicationName" : { "Ref" : "BrianApplication" },
-        "Description" : { "Fn::Join" :[ "-", [ "brian", { "Ref" : "BrianVersion" } ]]},
+        "Description" : { "Fn::Join" :[ "-", [ "brian-server", { "Ref" : "BrianVersion" } ]]},
         "SourceBundle" : {
           "S3Bucket" : "cm-public-eb-applications",
-          "S3Key" : { "Fn::Join" :[ "", [ "brian/brian-", { "Ref" : "BrianVersion" }, ".war" ]]}
+          "S3Key" : { "Fn::Join" :[ "", [ "brian-server/brian-server-", { "Ref" : "BrianVersion" }, ".war" ]]}
         }
       }
     },
@@ -407,6 +407,16 @@
         "TemplateName" : { "Ref" : "BrianConfig" },
         "VersionLabel" : { "Ref" : "BrianAppVer" }
       }
+    }
+  },
+
+  "Outputs" : {
+    "SSHToBackendServer" : {
+      "Value" : { "Fn::Join" :[ "", [
+        "ssh -i /path/to/", { "Ref" : "KeyName" }, ".pem",
+        " ec2-user@", { "Ref" : "BastionInstanceEIP" }
+      ]]},
+      "Description" : "SSH command to connect to the backend server"
     }
   }
 }

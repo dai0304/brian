@@ -111,9 +111,25 @@ war {
 // ======== release ========
 apply plugin: 'aws-s3'
 
+aws {
+	assert project.hasProperty('awsAccessKeyForRelease') && project.hasProperty('awsSecretKeyForRelease'): "AWS credential is required"
+	accessKeyId project.awsAccessKeyForRelease
+	secretKey project.awsSecretKeyForRelease
+	region 'ap-northeast-1'
+}
+
 task uploadWar(type: jp.classmethod.aws.gradle.s3.AmazonS3FileUploadTask, dependsOn: war) {
 	bucketName 'cm-public-eb-applications'
 	key "${artifactId}/${artifactId}-${version}.war"
 	file project.war.archivePath
 	overwrite project.version.endsWith('-SNAPSHOT')
+}
+
+task uploadDemoTemplate(type: jp.classmethod.aws.gradle.s3.AmazonS3FileUploadTask) {
+	bucketName 'cm-public-eb-applications'
+	key "${artifactId}/${artifactId}-${version}.template"
+	file file('brian-demo.template')
+	overwrite project.version.endsWith('-SNAPSHOT')
+} << {
+	println "open https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-1#cstack=sn~brian-demo|turl~${resourceUrl}"
 }

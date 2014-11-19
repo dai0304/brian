@@ -16,17 +16,11 @@
 package jp.classmethod.aws.brian.model;
 
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.Map;
-
-import jp.classmethod.aws.brian.Version;
-import jp.xet.baseunits.timeutil.Clock;
-
-import org.quartz.JobExecutionContext;
 
 public class BrianMessage {
 	
-	private final String brianVersion = Version.getVersionString();
+	private final String brianVersion;
 	
 	private final Date fireTime;
 	
@@ -43,26 +37,14 @@ public class BrianMessage {
 	private final String fireInstanceId;
 	
 	private final BrianTrigger trigger;
-
-	private final Map<String,Object> jobData;
+	
+	private final Map<String, Object> jobData;
 	
 	
-	public BrianMessage(JobExecutionContext context) {
-		fireTime = context.getFireTime();
-		scheduledFireTime = context.getScheduledFireTime();
-		prevFireTime = context.getPreviousFireTime();
-		nextFireTime = context.getNextFireTime();
-		refireCount = context.getRefireCount();
-		recovering = context.isRecovering();
-		trigger = BrianTrigger.getInstance(context.getTrigger());
-		fireInstanceId = context.getFireInstanceId();
-		jobData = new LinkedHashMap<>(context.getMergedJobDataMap());
-	}
-	
-	
-
-	public BrianMessage(Date fireTime, Date scheduledFireTime, Date prevFireTime, Date nextFireTime, int refireCount,
-			boolean recovering, String fireInstanceId, BrianTrigger trigger, Map<String, Object> jobData) {
+	public BrianMessage(String brianVersion, Date fireTime, Date scheduledFireTime, Date prevFireTime,
+			Date nextFireTime, int refireCount, boolean recovering, String fireInstanceId, BrianTrigger trigger,
+			Map<String, Object> jobData) {
+		this.brianVersion = brianVersion;
 		this.fireTime = fireTime;
 		this.scheduledFireTime = scheduledFireTime;
 		this.prevFireTime = prevFireTime;
@@ -73,12 +55,7 @@ public class BrianMessage {
 		this.trigger = trigger;
 		this.jobData = jobData;
 	}
-
-	public BrianMessage(Date scheduledFireTime, String fireInstanceId, BrianTrigger trigger, Map<String, Object> jobData) {
-		this(Clock.now().asJavaUtilDate(), scheduledFireTime, null, null, 0, false, fireInstanceId, trigger, jobData);
-	}
-
-
+	
 	public String getBrianVersion() {
 		return brianVersion;
 	}
@@ -114,7 +91,7 @@ public class BrianMessage {
 	public BrianTrigger getTrigger() {
 		return trigger;
 	}
-
+	
 	public Map<String, Object> getJobData() {
 		return jobData;
 	}

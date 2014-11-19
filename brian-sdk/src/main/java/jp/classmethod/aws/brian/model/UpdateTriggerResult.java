@@ -17,12 +17,12 @@ package jp.classmethod.aws.brian.model;
 
 import java.time.Instant;
 
-public class CreateTriggerResult {
+public class UpdateTriggerResult {
 	
 	Instant nextFireTime;
 	
 	
-	public CreateTriggerResult(Instant nextFireTime) {
+	public UpdateTriggerResult(Instant nextFireTime) {
 		this.nextFireTime = nextFireTime;
 	}
 	
@@ -46,7 +46,7 @@ public class CreateTriggerResult {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		CreateTriggerResult other = (CreateTriggerResult) obj;
+		UpdateTriggerResult other = (UpdateTriggerResult) obj;
 		if (nextFireTime == null) {
 			if (other.nextFireTime != null)
 				return false;

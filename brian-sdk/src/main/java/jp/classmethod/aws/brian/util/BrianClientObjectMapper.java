@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.classmethod.aws.brian.utils;
+package jp.classmethod.aws.brian.util;
 
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -31,24 +33,24 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
  * @author daisuke
  */
 @SuppressWarnings("serial")
-public class CustomObjectMapper extends ObjectMapper {
+public class BrianClientObjectMapper extends ObjectMapper {
 	
-	private static final Version VERSION = new Version(1, 0, 0, null, "jp.classmethod.aws", "brian");
-	private static final TimeZone UTC = TimeZone.getTimeZone("Universal");
+	private static final Version VERSION = new Version(1, 0, 0, null, "jp.classmethod.aws", "brianClient");
 	
 	
 	/**
 	 * Instantiate.
 	 */
-	public CustomObjectMapper() {
-		SimpleModule brianModule = new SimpleModule("brianModule", VERSION);
-		brianModule.addSerializer(new TriggerSerializer());
+	public BrianClientObjectMapper() {
+		SimpleModule brianModule = new SimpleModule("brianClientModule", VERSION);
 		registerModule(brianModule);
 		
 		configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+		configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+		setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
 		
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-		df.setTimeZone(UTC);
+		df.setTimeZone(TimeZone.getTimeZone("Universal"));
 		setDateFormat(df);
 	}
 }

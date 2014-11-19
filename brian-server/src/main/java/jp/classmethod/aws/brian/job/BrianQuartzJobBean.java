@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.TimeZone;
 
 import jp.classmethod.aws.brian.model.BrianMessage;
+import jp.classmethod.aws.brian.utils.BrianFactory;
 
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -106,7 +107,7 @@ public class BrianQuartzJobBean extends QuartzJobBean {
 		try {
 			JobDetail jobDetail = context.getJobDetail();
 			Trigger trigger = context.getTrigger();
-			BrianMessage message = new BrianMessage(context);
+			BrianMessage message = BrianFactory.createBrianMessage(context);
 			String json = gson.toJson(message);
 			
 			logger.info(">>> ======== Quartz job executed by firing {} with job = {}", trigger.getKey(), jobDetail.getKey());

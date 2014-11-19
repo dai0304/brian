@@ -54,7 +54,7 @@ configure(javaProjects()) {
 		guavaVersion = '18.0'
 		quartzVersion = '2.2.0'
 		gsonVersion = '2.2.2'
-		baseunitsVersion = '2.11'
+		baseunitsVersion = '2.13'
 		awsJavaSdkVersion = '1.9.2'
 	}
 
@@ -176,12 +176,12 @@ apply plugin: 'aws'
 
 aws {
 	assert project.hasProperty('awsAccessKeyForRelease') && project.hasProperty('awsSecretKeyForRelease'): "AWS credential is required"
-	accessKeyId awsAccessKeyForRelease
-	secretKey awsSecretKeyForRelease
+	accessKeyId project.awsAccessKeyForRelease
+	secretKey project.awsSecretKeyForRelease
 	region 'ap-northeast-1'
 }
 
-task uploadArchives(dependsOn: [':brian-server:uploadWar'])
+task uploadArchives(dependsOn: [':brian-sdk:uploadArchives', ':brian-server:uploadWar'])
 
 
 // ======== Tasks ========

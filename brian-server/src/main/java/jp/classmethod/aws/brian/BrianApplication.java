@@ -23,14 +23,12 @@ import jp.classmethod.aws.brian.utils.InitializationUtil;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 
 @Configuration
 @EnableAutoConfiguration
-@ComponentScan
-@ImportResource("classpath:/META-INF/spring/quartz-context.xml")
+@ImportResource({"classpath:/applicationContext.xml","classpath:/META-INF/spring/mvc-context.xml"})
 public class BrianApplication {
 	
 	public static final Collection<String> REQUIRED_SYSTEM_PROPERTIES = Collections.unmodifiableCollection(Arrays.asList(
