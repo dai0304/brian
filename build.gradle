@@ -22,7 +22,7 @@ plugins {
 allprojects {
 	apply plugin: 'base'
 	group = 'jp.classmethod.aws.brian'
-	version = '0.10-SNAPSHOT'
+	version = '0.10'
 }
 
 def javaProjects() {
