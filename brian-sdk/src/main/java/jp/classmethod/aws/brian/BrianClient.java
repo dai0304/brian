@@ -65,7 +65,7 @@ public class BrianClient implements Brian {
 	
 	
 	public static String getVersionString() {
-		return "";
+		return "0.00-SNAPSHOT";
 	}
 	
 	
@@ -407,5 +407,35 @@ public class BrianClient implements Brian {
 		} catch (IllegalStateException e) {
 			throw new Error(e);
 		}
+	}
+
+	
+	public void setScheme(String scheme) {
+		this.scheme = scheme;
+	}
+
+	
+	public void setHostname(String hostname) {
+		this.hostname = hostname;
+	}
+
+	
+	public void setPort(int port) {
+		this.port = port;
+	}
+
+	
+	public void setUserAgent(String userAgent) {
+		this.userAgent = userAgent;
+	}
+
+	
+	public void setSocketTimeout(int socketTimeout) {
+		this.socketTimeout = socketTimeout;
+	}
+
+	
+	public void setConnectionTimeout(int connectionTimeout) {
+		this.connectionTimeout = connectionTimeout;
 	}
 }
