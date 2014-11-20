@@ -29,7 +29,6 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
  * Custom {@link ObjectMapper} implementation for Brian.
  * 
  * @since 1.0
- * @version $Id$
  * @author daisuke
  */
 @SuppressWarnings("serial")

@@ -17,7 +17,8 @@ package jp.classmethod.aws.brian;
 
 import java.util.List;
 
-import jp.classmethod.aws.brian.model.BrianException;
+import jp.classmethod.aws.brian.model.BrianClientException;
+import jp.classmethod.aws.brian.model.BrianServerException;
 import jp.classmethod.aws.brian.model.BrianTrigger;
 import jp.classmethod.aws.brian.model.CreateTriggerResult;
 import jp.classmethod.aws.brian.model.TriggerKey;
@@ -31,20 +32,78 @@ import jp.classmethod.aws.brian.model.UpdateTriggerResult;
  */
 public interface Brian {
 	
+	/**
+	 * Check availability of the Brian service.
+	 * 
+	 * @return {@code true} if the Brian service is available, {@code false} otherwise
+	 */
 	boolean isAvailable();
 	
-	List<String> listTriggerGroups() throws BrianException;
+	/**
+	 * Returns a list of trigger group names.
+	 * 
+	 * @return list of trigger group names
+	 * @throws BrianClientException If any errors are encountered in the client while making the request or handling the response.
+	 * @throws BrianServerException If any errors occurred in the service while processing the request.
+	 */
+	List<String> listTriggerGroups() throws BrianClientException, BrianServerException;
 	
-	List<String> listTriggers(String group) throws BrianException;
+	/**
+	 * Returns a list of trigger names in the group.
+	 * 
+	 * @param group group name
+	 * @return list of trigger names
+	 * @throws BrianClientException If any errors are encountered in the client while making the request or handling the response.
+	 * @throws BrianServerException If any errors occurred in the service while processing the request.
+	 */
+	List<String> listTriggers(String group) throws BrianClientException, BrianServerException;
 	
-	CreateTriggerResult createTrigger(BrianTrigger trigger) throws BrianException;
+	/**
+	 * TODO for daisuke
+	 * 
+	 * @param trigger trigger to create
+	 * @return
+	 * @throws BrianClientException If any errors are encountered in the client while making the request or handling the response.
+	 * @throws BrianServerException If any errors occurred in the service while processing the request.
+	 */
+	CreateTriggerResult createTrigger(BrianTrigger trigger) throws BrianClientException, BrianServerException;
 	
-	UpdateTriggerResult updateTrigger(BrianTrigger trigger) throws BrianException;
+	/**
+	 * TODO for daisuke
+	 * 
+	 * @param trigger trigger to update
+	 * @return
+	 * @throws BrianClientException If any errors are encountered in the client while making the request or handling the response.
+	 * @throws BrianServerException If any errors occurred in the service while processing the request.
+	 */
+	UpdateTriggerResult updateTrigger(BrianTrigger trigger) throws BrianClientException, BrianServerException;
 	
-	BrianTrigger describeTrigger(TriggerKey key) throws BrianException;
+	/**
+	 * TODO for daisuke
+	 * 
+	 * @param key trigger key to describe
+	 * @return
+	 * @throws BrianClientException If any errors are encountered in the client while making the request or handling the response.
+	 * @throws BrianServerException If any errors occurred in the service while processing the request.
+	 */
+	BrianTrigger describeTrigger(TriggerKey key) throws BrianClientException, BrianServerException;
 	
-	void deleteTrigger(TriggerKey key) throws BrianException;
+	/**
+	 * TODO for daisuke
+	 * 
+	 * @param key treigger key to delete
+	 * @throws BrianClientException If any errors are encountered in the client while making the request or handling the response.
+	 * @throws BrianServerException If any errors occurred in the service while processing the request.
+	 */
+	void deleteTrigger(TriggerKey key) throws BrianClientException, BrianServerException;
 	
-	void forceFireTrigger(TriggerKey key) throws BrianException;
+	/**
+	 * TODO for daisuke
+	 * 
+	 * @param key trigger key to force fire
+	 * @throws BrianClientException If any errors are encountered in the client while making the request or handling the response.
+	 * @throws BrianServerException If any errors occurred in the service while processing the request.
+	 */
+	void forceFireTrigger(TriggerKey key) throws BrianClientException, BrianServerException;
 	
 }

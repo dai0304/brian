@@ -15,33 +15,25 @@
  */
 package jp.classmethod.aws.brian;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-
-import jp.classmethod.aws.brian.utils.InitializationUtil;
-
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.context.embedded.ServletContextInitializer;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 
 @Configuration
 @EnableAutoConfiguration
-@ImportResource({"classpath:/applicationContext.xml","classpath:/META-INF/spring/mvc-context.xml"})
+@ImportResource("classpath:/applicationContext.xml")
 public class BrianApplication {
-	
-	public static final Collection<String> REQUIRED_SYSTEM_PROPERTIES = Collections.unmodifiableCollection(Arrays.asList(
-			"JDBC_CONNECTION_STRING",
-			"DB_USERNAME",
-			"DB_PASSWORD",
-			"BRIAN_TOPIC_ARN"
-	));
 	
 	
 	public static void main(String[] args) {
-		InitializationUtil.logAllProperties();
-		InitializationUtil.validateExistRequiredSystemProperties(REQUIRED_SYSTEM_PROPERTIES);
 		SpringApplication.run(BrianApplication.class, args);
+	}
+	
+	@Bean
+	ServletContextInitializer servletContextInitializer() {
+		return servletContext -> BrianSpringInitializer.doStartup(servletContext, false);
 	}
 }
