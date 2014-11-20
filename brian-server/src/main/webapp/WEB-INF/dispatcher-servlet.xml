@@ -25,7 +25,9 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
   <context:annotation-config />
-  <context:component-scan base-package="jp.classmethod.aws.brian.web" />
+  <context:component-scan base-package="jp.classmethod.aws.brian.web">
+    <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+  </context:component-scan>
   <mvc:resources location="/favicon.ico" mapping="/favicon.ico" />
 
   <bean id="jacksonObjectMapper" class="jp.classmethod.aws.brian.utils.BrianServerObjectMapperFactoryBean" />

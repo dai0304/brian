@@ -28,6 +28,8 @@
   <import resource="classpath:/META-INF/spring/quartz-context.xml"/>
 
   <context:annotation-config />
-  <context:component-scan base-package="jp.classmethod.aws.brian" />
+  <context:component-scan base-package="jp.classmethod.aws.brian">
+    <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+  </context:component-scan>
   
 </beans>
