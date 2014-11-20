@@ -27,9 +27,9 @@ import jp.classmethod.aws.brian.utils.InitializationUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ContextLoaderListener;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
@@ -56,7 +56,7 @@ public class BrianSpringInitializer implements WebApplicationInitializer {
 	 * TODO for daisuke
 	 * 
 	 * @param container {@link ServletContext}
-	 * @param createApplicationContext {@code true} to create {@link WebAppConfiguration}
+	 * @param createApplicationContext {@code true} to create {@link WebApplicationContext}
 	 * @since 1.0
 	 */
 	public static void doStartup(ServletContext container, boolean createApplicationContext) {
