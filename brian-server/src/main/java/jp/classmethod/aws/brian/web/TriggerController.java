@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
-import jp.classmethod.aws.brian.model.BrianResponse;
 import jp.classmethod.aws.brian.model.BrianTriggerRequest;
 import jp.xet.baseunits.time.CalendarUtil;
 import jp.xet.baseunits.time.TimePoint;

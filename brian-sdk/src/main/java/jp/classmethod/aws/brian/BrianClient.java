@@ -25,18 +25,10 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import jp.classmethod.aws.brian.model.BrianClientException;
-import jp.classmethod.aws.brian.model.BrianCronTrigger;
-import jp.classmethod.aws.brian.model.BrianException;
-import jp.classmethod.aws.brian.model.BrianServerException;
-import jp.classmethod.aws.brian.model.BrianSimpleTrigger;
-import jp.classmethod.aws.brian.model.BrianTrigger;
-import jp.classmethod.aws.brian.model.BrianTriggerRequest;
-import jp.classmethod.aws.brian.model.CreateTriggerResult;
-import jp.classmethod.aws.brian.model.ScheduleType;
-import jp.classmethod.aws.brian.model.TriggerKey;
-import jp.classmethod.aws.brian.model.UpdateTriggerResult;
-import jp.classmethod.aws.brian.util.BrianClientObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.TreeTraversingParser;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -52,11 +44,24 @@ import org.apache.http.message.BasicHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.TreeTraversingParser;
+import jp.classmethod.aws.brian.model.BrianClientException;
+import jp.classmethod.aws.brian.model.BrianCronTrigger;
+import jp.classmethod.aws.brian.model.BrianServerException;
+import jp.classmethod.aws.brian.model.BrianSimpleTrigger;
+import jp.classmethod.aws.brian.model.BrianTrigger;
+import jp.classmethod.aws.brian.model.BrianTriggerRequest;
+import jp.classmethod.aws.brian.model.CreateTriggerResult;
+import jp.classmethod.aws.brian.model.ScheduleType;
+import jp.classmethod.aws.brian.model.TriggerKey;
+import jp.classmethod.aws.brian.model.UpdateTriggerResult;
+import jp.classmethod.aws.brian.util.BrianClientObjectMapper;
 
+/**
+ * {@link Brian} implementation.
+ * 
+ * @author daisuke
+ * @since 1.0
+ */
 public class BrianClient implements Brian {
 	
 	private static Logger logger = LoggerFactory.getLogger(BrianClient.class);
@@ -64,6 +69,12 @@ public class BrianClient implements Brian {
 	private static final String DEFAULT_USER_AGENT = "BrianSdk-" + BrianClient.getVersionString();
 	
 	
+	/**
+	 * Returns version string of Brian client.
+	 * 
+	 * @return Brian client version
+	 * @since 1.0
+	 */
 	public static String getVersionString() {
 		return "0.00-SNAPSHOT";
 	}
@@ -71,9 +82,9 @@ public class BrianClient implements Brian {
 	
 	private String scheme = "http";
 	
-	private String hostname = "localhost";
+	private String hostname;
 	
-	private int port = 80;
+	private int port;
 	
 	private String userAgent = DEFAULT_USER_AGENT;
 	
@@ -81,12 +92,25 @@ public class BrianClient implements Brian {
 	
 	private int connectionTimeout = 3000;
 	
-	private ObjectMapper mapper = new BrianClientObjectMapper();
+	private final ObjectMapper mapper = new BrianClientObjectMapper();
 	
 	
+	/**
+	 * Create BrianClient to communicate with {@code localhost:80} Brian server.
+	 * 
+	 * @since 1.0
+	 */
 	public BrianClient() {
+		this("localhost", 80);
 	}
 	
+	/**
+	 * Create BrianClient to communicate with Brian server in the specified host.
+	 * 
+	 * @param hostname hostname the Brian server working on
+	 * @param port port the Brian listening on
+	 * @since 1.0
+	 */
 	public BrianClient(String hostname, int port) {
 		this.hostname = hostname;
 		this.port = port;
@@ -104,9 +128,9 @@ public class BrianClient implements Brian {
 			
 			public HttpClientSupplier() {
 				RequestConfig requestConfig = RequestConfig.custom()
-						.setConnectTimeout(connectionTimeout)
-						.setSocketTimeout(socketTimeout)
-						.build();
+					.setConnectTimeout(connectionTimeout)
+					.setSocketTimeout(socketTimeout)
+					.build();
 				logger.trace("requestConfig = {}", requestConfig);
 				
 				List<Header> headers = new ArrayList<>();
@@ -114,12 +138,13 @@ public class BrianClient implements Brian {
 				headers.add(new BasicHeader("User-Agent", userAgent));
 				
 				httpClient = HttpClientBuilder.create()
-						.setDefaultRequestConfig(requestConfig)
-						.setDefaultHeaders(headers)
-						.build();
+					.setDefaultRequestConfig(requestConfig)
+					.setDefaultHeaders(headers)
+					.build();
 				logger.trace("httpClient created");
 			}
 			
+			@Override
 			public HttpClient get() {
 				return httpClient;
 			}
@@ -146,7 +171,7 @@ public class BrianClient implements Brian {
 	}
 	
 	@Override
-	public List<String> listTriggerGroups() throws BrianException {
+	public List<String> listTriggerGroups() throws BrianClientException, BrianServerException {
 		try {
 			URI uri = new URI(scheme, null, hostname, port, "/triggers", null, null);
 			HttpUriRequest httpRequest = RequestBuilder.get().setUri(uri).build();
@@ -174,7 +199,7 @@ public class BrianClient implements Brian {
 	}
 	
 	@Override
-	public List<String> listTriggers(String group) throws BrianException {
+	public List<String> listTriggers(String group) throws BrianClientException, BrianServerException {
 		try {
 			String path = String.format("/triggers/%s", group);
 			URI uri = new URI(scheme, null, hostname, port, path, null, null);
@@ -202,8 +227,9 @@ public class BrianClient implements Brian {
 			throw new Error(e);
 		}
 	}
-
-	public CreateTriggerResult createTrigger(BrianTrigger trigger) throws BrianException {
+	
+	@Override
+	public CreateTriggerResult createTrigger(BrianTrigger trigger) throws BrianClientException, BrianServerException {
 		try {
 			BrianTriggerRequest request = trigger.toBrianTriggerRequest();
 			String requestBody = mapper.writeValueAsString(request);
@@ -222,7 +248,7 @@ public class BrianClient implements Brian {
 				logger.info("nextFireTime = {}", nextFireTime);
 				return new CreateTriggerResult(Instant.parse(nextFireTime));
 			} else if (statusCode >= 500) {
-				throw new BrianServerException(String.format("status = %d; message = %s", new Object[]{
+				throw new BrianServerException(String.format("status = %d; message = %s", new Object[] {
 					statusCode,
 					tree.get("message").textValue()
 				}));
@@ -232,12 +258,12 @@ public class BrianClient implements Brian {
 					trigger.getName()
 				}));
 			} else if (statusCode >= 400) {
-				throw new BrianClientException(String.format("status = %d; message = %s", new Object[]{
+				throw new BrianClientException(String.format("status = %d; message = %s", new Object[] {
 					statusCode,
 					tree.get("message").textValue()
 				}));
 			} else {
-				throw new Error(String.format("status = %d; message = %s", new Object[]{
+				throw new Error(String.format("status = %d; message = %s", new Object[] {
 					statusCode,
 					tree.get("message").textValue()
 				}));
@@ -254,7 +280,7 @@ public class BrianClient implements Brian {
 	}
 	
 	@Override
-	public UpdateTriggerResult updateTrigger(BrianTrigger trigger) throws BrianException {
+	public UpdateTriggerResult updateTrigger(BrianTrigger trigger) throws BrianClientException, BrianServerException {
 		try {
 			BrianTriggerRequest request = trigger.toBrianTriggerRequest();
 			String requestBody = mapper.writeValueAsString(request);
@@ -273,7 +299,7 @@ public class BrianClient implements Brian {
 				logger.info("nextFireTime = {}", nextFireTime);
 				return new UpdateTriggerResult(Instant.parse(nextFireTime));
 			} else if (statusCode >= 500) {
-				throw new BrianServerException(String.format("status = %d; message = %s", new Object[]{
+				throw new BrianServerException(String.format("status = %d; message = %s", new Object[] {
 					statusCode,
 					tree.get("message").textValue()
 				}));
@@ -283,12 +309,12 @@ public class BrianClient implements Brian {
 					trigger.getName()
 				}));
 			} else if (statusCode >= 400) {
-				throw new BrianClientException(String.format("status = %d; message = %s", new Object[]{
+				throw new BrianClientException(String.format("status = %d; message = %s", new Object[] {
 					statusCode,
 					tree.get("message").textValue()
 				}));
 			} else {
-				throw new Error(String.format("status = %d; message = %s", new Object[]{
+				throw new Error(String.format("status = %d; message = %s", new Object[] {
 					statusCode,
 					tree.get("message").textValue()
 				}));
@@ -303,9 +329,9 @@ public class BrianClient implements Brian {
 			throw new Error(e);
 		}
 	}
-
+	
 	@Override
-	public BrianTrigger describeTrigger(TriggerKey key) throws BrianException {
+	public BrianTrigger describeTrigger(TriggerKey key) throws BrianClientException, BrianServerException {
 		try {
 			String path = String.format("/triggers/%s/%s", key.getGroup(), key.getName());
 			URI uri = new URI(scheme, null, hostname, port, path, null, null);
@@ -343,8 +369,9 @@ public class BrianClient implements Brian {
 			throw new Error(e);
 		}
 	}
-
-	public void deleteTrigger(TriggerKey key) throws BrianException {
+	
+	@Override
+	public void deleteTrigger(TriggerKey key) throws BrianClientException, BrianServerException {
 		try {
 			String path = String.format("/triggers/%s/%s", key.getGroup(), key.getName());
 			URI uri = new URI(scheme, null, hostname, port, path, null, null);
@@ -375,9 +402,9 @@ public class BrianClient implements Brian {
 			throw new Error(e);
 		}
 	}
-
+	
 	@Override
-	public void forceFireTrigger(TriggerKey key) throws BrianException {
+	public void forceFireTrigger(TriggerKey key) throws BrianClientException, BrianServerException {
 		try {
 			String path = String.format("/triggers/%s/%s", key.getGroup(), key.getName());
 			URI uri = new URI(scheme, null, hostname, port, path, null, null);
@@ -408,33 +435,63 @@ public class BrianClient implements Brian {
 			throw new Error(e);
 		}
 	}
-
 	
+	/**
+	 * Set the scheme.
+	 * 
+	 * @param scheme {@code http} or {@code https}
+	 * @since 1.0
+	 */
 	public void setScheme(String scheme) {
 		this.scheme = scheme;
 	}
-
 	
+	/**
+	 * Set the hostname.
+	 * 
+	 * @param hostname hostname
+	 * @since 1.0
+	 */
 	public void setHostname(String hostname) {
 		this.hostname = hostname;
 	}
-
 	
+	/**
+	 * Set the port.
+	 * 
+	 * @param port 80 and so on
+	 * @since 1.0
+	 */
 	public void setPort(int port) {
 		this.port = port;
 	}
-
 	
+	/**
+	 * Set the user-agent name.
+	 * 
+	 * @param userAgent user-agent value
+	 * @since 1.0
+	 */
 	public void setUserAgent(String userAgent) {
 		this.userAgent = userAgent;
 	}
-
 	
+	/**
+	 * Set the socket timeout.
+	 * 
+	 * @param socketTimeout socket timeout
+	 * @since 1.0
+	 */
 	public void setSocketTimeout(int socketTimeout) {
 		this.socketTimeout = socketTimeout;
 	}
-
 	
+	/**
+	 * Set the connection timeout.
+	 * 
+	 * @param connectionTimeout connection timeout
+	 * @since 1.0
+	 */
 	public void setConnectionTimeout(int connectionTimeout) {
 		this.connectionTimeout = connectionTimeout;
 	}

@@ -24,10 +24,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Utiliti class for application initialization.
+ * Utility class for application initialization.
  * 
  * @since 1.0
- * @version $Id$
  * @author daisuke
  */
 public class InitializationUtil {

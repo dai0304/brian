@@ -19,15 +19,15 @@ import java.text.SimpleDateFormat;
 
 import jp.xet.baseunits.util.TimeZones;
 
-import org.quartz.Trigger;
-import org.springframework.beans.factory.config.AbstractFactoryBean;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+
+import org.quartz.Trigger;
+import org.springframework.beans.factory.config.AbstractFactoryBean;
 
 /**
  * Custom {@link ObjectMapper} for Brian.
@@ -40,15 +40,14 @@ public class BrianServerObjectMapperFactoryBean extends AbstractFactoryBean<Obje
 	
 	private static final Version VERSION = new Version(1, 0, 0, null, "jp.classmethod.aws", "brianServer");
 	
-
+	
 	@Override
 	public Class<?> getObjectType() {
 		return ObjectMapper.class;
 	}
-
-
+	
 	@Override
-	protected ObjectMapper createInstance() throws Exception {
+	protected ObjectMapper createInstance() {
 		ObjectMapper mapper = new ObjectMapper();
 		SimpleModule brianModule = new SimpleModule("brianServerModule", VERSION);
 		brianModule.addSerializer(Trigger.class, new TriggerSerializer());

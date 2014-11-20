@@ -13,8 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jp.classmethod.aws.brian.model;
+package jp.classmethod.aws.brian.web;
 
+/**
+ * Response entity that the APIs return.
+ * 
+ * @param <T> content type
+ * @author daisuke
+ * @since 1.0
+ */
 public class BrianResponse<T> {
 	
 	private final boolean success;
@@ -27,7 +34,17 @@ public class BrianResponse<T> {
 	/**
 	 * @param success
 	 * @param message
+	 * @since 1.0
+	 */
+	public BrianResponse(boolean success, String message) {
+		this(success, message, null);
+	}
+	
+	/**
+	 * @param success
+	 * @param message
 	 * @param content
+	 * @since 1.0
 	 */
 	public BrianResponse(boolean success, String message, T content) {
 		this.success = success;
@@ -35,25 +52,16 @@ public class BrianResponse<T> {
 		this.content = content;
 	}
 	
-	/**
-	 * @param success
-	 * @param message
-	 */
-	public BrianResponse(boolean success, String message) {
-		this(success, message, null);
-	}
-	
-	
-	public boolean isSuccess() {
-		return success;
+	public T getContent() {
+		return content;
 	}
 	
 	public String getMessage() {
 		return message;
 	}
 	
-	public T getContent() {
-		return content;
+	public boolean isSuccess() {
+		return success;
 	}
 	
 	@Override

@@ -21,8 +21,6 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import org.springframework.beans.factory.FactoryBean;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -30,11 +28,18 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
+import org.springframework.beans.factory.FactoryBean;
 
+/**
+ * {@link FactoryBean} for {@link Gson}.
+ * 
+ * @since 1.0
+ * @author daisuke
+ */
 public class GsonFactoryBean implements FactoryBean<Gson> {
-
+	
 	@Override
-	public Gson getObject() throws Exception {
+	public Gson getObject() {
 		GsonBuilder builder = new GsonBuilder();
 		builder.registerTypeAdapter(Class.class, new ClassSerializer());
 		builder.registerTypeAdapter(TimeZone.class, new TimeZoneSerializer());
@@ -42,12 +47,12 @@ public class GsonFactoryBean implements FactoryBean<Gson> {
 		Gson gson = builder.create();
 		return gson;
 	}
-
+	
 	@Override
 	public Class<?> getObjectType() {
 		return Gson.class;
 	}
-
+	
 	@Override
 	public boolean isSingleton() {
 		return true;
@@ -55,7 +60,7 @@ public class GsonFactoryBean implements FactoryBean<Gson> {
 }
 
 class ClassSerializer implements JsonSerializer<Class<?>> {
-
+	
 	@Override
 	public JsonElement serialize(Class<?> src, Type typeOfSrc, JsonSerializationContext context) {
 		return new JsonPrimitive(src.getName());
@@ -63,7 +68,7 @@ class ClassSerializer implements JsonSerializer<Class<?>> {
 }
 
 class TimeZoneSerializer implements JsonSerializer<TimeZone> {
-
+	
 	@Override
 	public JsonElement serialize(TimeZone src, Type typeOfSrc, JsonSerializationContext context) {
 		return new JsonPrimitive(src.getID());
@@ -71,7 +76,7 @@ class TimeZoneSerializer implements JsonSerializer<TimeZone> {
 }
 
 class DateSerializer implements JsonSerializer<Date> {
-
+	
 	@Override
 	public JsonElement serialize(Date src, Type typeOfSrc, JsonSerializationContext context) {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);

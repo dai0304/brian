@@ -15,26 +15,53 @@
  */
 package jp.classmethod.aws.brian.model;
 
-
+/**
+ * Thrown to indicate that any errors occurred in the service while processing the request.
+ * 
+ * @author daisuke
+ * @since 1.0
+ */
 @SuppressWarnings("serial")
 public class BrianServerException extends BrianException {
-
+	
+	/**
+	 * Constructs a new exception with no detail message.
+	 * 
+	 * @author daisuke
+	 * @since 1.0
+	 */
 	public BrianServerException() {
 		super();
 	}
-
+	
+	/**
+	 * Constructs a new exception with the specified detail message and cause.
+	 *
+	 * @param message the detail message.
+	 * @param cause the cause
+	 * @since 1.0
+	 */
 	public BrianServerException(String message, Throwable cause) {
 		super(message, cause);
 	}
-
+	
+	/**
+	 * Constructs a new exception with with the specified detail message.
+	 * 
+	 * @param message the detail message.
+	 * @since 1.0
+	 */
 	public BrianServerException(String message) {
 		super(message);
 	}
-
+	
+	/**
+	 * Constructs a new exception with the specified cause.
+	 *
+	 * @param  cause the cause
+	 * @since 1.0
+	 */
 	public BrianServerException(Throwable cause) {
 		super(cause);
-	}
-	protected BrianServerException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
 	}
 }

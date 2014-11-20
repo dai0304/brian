@@ -25,6 +25,9 @@ import java.util.TimeZone;
 import jp.classmethod.aws.brian.model.BrianMessage;
 import jp.classmethod.aws.brian.utils.BrianFactory;
 
+import com.amazonaws.services.sns.AmazonSNS;
+import com.google.gson.Gson;
+
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
@@ -34,9 +37,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
-import com.amazonaws.services.sns.AmazonSNS;
-import com.google.gson.Gson;
-
+/**
+ * Brian's {@link QuartzJobBean} implementation.
+ * 
+ * @since 1.0
+ * @author daisuke
+ */
 public class BrianQuartzJobBean extends QuartzJobBean {
 	
 	private static Logger logger = LoggerFactory.getLogger(BrianQuartzJobBean.class);
@@ -61,7 +67,7 @@ public class BrianQuartzJobBean extends QuartzJobBean {
 		}
 		return createFormat().format(date);
 	}
-
+	
 	/**
 	 * Returns a string representation of this map.  The string representation
 	 * consists of a list of key-value mappings in the order returned by the
@@ -72,6 +78,7 @@ public class BrianQuartzJobBean extends QuartzJobBean {
 	 * associated value.  Keys and values are converted to strings as by
 	 * {@link String#valueOf(Object)}.
 	 *
+	 * @param jdm {@link JobDataMap}
 	 * @return a string representation of this map
 	 */
 	static String toString(JobDataMap jdm) {
@@ -96,12 +103,14 @@ public class BrianQuartzJobBean extends QuartzJobBean {
 		}
 	}
 	
+	
 	private Gson gson;
 	
 	private AmazonSNS sns;
 	
 	private String topicArn;
-
+	
+	
 	@Override
 	protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
 		try {
@@ -110,7 +119,8 @@ public class BrianQuartzJobBean extends QuartzJobBean {
 			BrianMessage message = BrianFactory.createBrianMessage(context);
 			String json = gson.toJson(message);
 			
-			logger.info(">>> ======== Quartz job executed by firing {} with job = {}", trigger.getKey(), jobDetail.getKey());
+			logger.info(">>> ======== Quartz job executed by firing {} with job = {}", trigger.getKey(),
+					jobDetail.getKey());
 			logger.info(" scheduledFireTime = {}", toString(context.getScheduledFireTime()));
 			logger.info("          fireTime = {}", toString(context.getFireTime()));
 			logger.info("      nextFireTime = {}", toString(context.getNextFireTime()));
@@ -155,7 +165,7 @@ public class BrianQuartzJobBean extends QuartzJobBean {
 	public void setSns(AmazonSNS sns) {
 		this.sns = sns;
 	}
-
+	
 	public void setTopicArn(String topicArn) {
 		this.topicArn = topicArn;
 	}

@@ -15,9 +15,15 @@
  */
 package jp.classmethod.aws.brian.web;
 
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
+/**
+ * Thrown to indicate that the Brian resource (triggers and so on...) is not found.
+ * 
+ * @author daisuke
+ * @since 1.0
+ */
 @SuppressWarnings("serial")
 @ResponseStatus(HttpStatus.NOT_FOUND)
 public class ResourceNotFoundException extends RuntimeException {
