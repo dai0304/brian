@@ -15,9 +15,33 @@
  */
 package jp.classmethod.aws.brian.model;
 
-
+/**
+ * Trigger schedule type.
+ * 
+ * @author daisuke
+ * @since 1.0
+ */
 public enum ScheduleType {
 	
-	cron, simple, oneshot;
+	/**
+	 * Cron schedule trigger.
+	 * 
+	 * @since 1.0
+	 */
+	cron,
+	
+	/**
+	 * Simple schedule trigger.
+	 * 
+	 * @since 1.0
+	 */
+	simple,
+	
+	/**
+	 * One shot schedule trigger.
+	 * 
+	 * @since 1.0
+	 */
+	oneshot;
 	
 }

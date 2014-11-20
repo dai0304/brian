@@ -57,7 +57,7 @@ import jp.classmethod.aws.brian.model.UpdateTriggerResult;
 import jp.classmethod.aws.brian.util.BrianClientObjectMapper;
 
 /**
- * TODO for daisuke
+ * {@link Brian} implementation.
  * 
  * @author daisuke
  * @since 1.0
@@ -82,9 +82,9 @@ public class BrianClient implements Brian {
 	
 	private String scheme = "http";
 	
-	private String hostname = "localhost";
+	private String hostname;
 	
-	private int port = 80;
+	private int port;
 	
 	private String userAgent = DEFAULT_USER_AGENT;
 	
@@ -95,9 +95,22 @@ public class BrianClient implements Brian {
 	private final ObjectMapper mapper = new BrianClientObjectMapper();
 	
 	
+	/**
+	 * Create BrianClient to communicate with {@code localhost:80} Brian server.
+	 * 
+	 * @since 1.0
+	 */
 	public BrianClient() {
+		this("localhost", 80);
 	}
 	
+	/**
+	 * Create BrianClient to communicate with Brian server in the specified host.
+	 * 
+	 * @param hostname hostname the Brian server working on
+	 * @param port port the Brian listening on
+	 * @since 1.0
+	 */
 	public BrianClient(String hostname, int port) {
 		this.hostname = hostname;
 		this.port = port;
@@ -423,26 +436,62 @@ public class BrianClient implements Brian {
 		}
 	}
 	
+	/**
+	 * Set the scheme.
+	 * 
+	 * @param scheme {@code http} or {@code https}
+	 * @since 1.0
+	 */
 	public void setScheme(String scheme) {
 		this.scheme = scheme;
 	}
 	
+	/**
+	 * Set the hostname.
+	 * 
+	 * @param hostname hostname
+	 * @since 1.0
+	 */
 	public void setHostname(String hostname) {
 		this.hostname = hostname;
 	}
 	
+	/**
+	 * Set the port.
+	 * 
+	 * @param port 80 and so on
+	 * @since 1.0
+	 */
 	public void setPort(int port) {
 		this.port = port;
 	}
 	
+	/**
+	 * Set the user-agent name.
+	 * 
+	 * @param userAgent user-agent value
+	 * @since 1.0
+	 */
 	public void setUserAgent(String userAgent) {
 		this.userAgent = userAgent;
 	}
 	
+	/**
+	 * Set the socket timeout.
+	 * 
+	 * @param socketTimeout socket timeout
+	 * @since 1.0
+	 */
 	public void setSocketTimeout(int socketTimeout) {
 		this.socketTimeout = socketTimeout;
 	}
 	
+	/**
+	 * Set the connection timeout.
+	 * 
+	 * @param connectionTimeout connection timeout
+	 * @since 1.0
+	 */
 	public void setConnectionTimeout(int connectionTimeout) {
 		this.connectionTimeout = connectionTimeout;
 	}

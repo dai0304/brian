@@ -59,48 +59,53 @@ public interface Brian {
 	List<String> listTriggers(String group) throws BrianClientException, BrianServerException;
 	
 	/**
-	 * TODO for daisuke
+	 * Create trigger.
 	 * 
 	 * @param trigger trigger to create
-	 * @return
+	 * @return the result of create trigger action
+	 * @throws BrianClientException conflict - already exist same name trigger
 	 * @throws BrianClientException If any errors are encountered in the client while making the request or handling the response.
 	 * @throws BrianServerException If any errors occurred in the service while processing the request.
 	 */
 	CreateTriggerResult createTrigger(BrianTrigger trigger) throws BrianClientException, BrianServerException;
 	
 	/**
-	 * TODO for daisuke
+	 * Update existing trigger.
 	 * 
 	 * @param trigger trigger to update
-	 * @return
+	 * @return the result of update trigger action
+	 * @throws BrianClientException not found - trigger to update not found
 	 * @throws BrianClientException If any errors are encountered in the client while making the request or handling the response.
 	 * @throws BrianServerException If any errors occurred in the service while processing the request.
 	 */
 	UpdateTriggerResult updateTrigger(BrianTrigger trigger) throws BrianClientException, BrianServerException;
 	
 	/**
-	 * TODO for daisuke
+	 * Describe existing trigger.
 	 * 
 	 * @param key trigger key to describe
-	 * @return
+	 * @return the trigger
+	 * @throws BrianClientException not found - trigger to update not found
 	 * @throws BrianClientException If any errors are encountered in the client while making the request or handling the response.
 	 * @throws BrianServerException If any errors occurred in the service while processing the request.
 	 */
 	BrianTrigger describeTrigger(TriggerKey key) throws BrianClientException, BrianServerException;
 	
 	/**
-	 * TODO for daisuke
+	 * Delete trigger.
 	 * 
 	 * @param key treigger key to delete
+	 * @throws BrianClientException not found - trigger to update not found
 	 * @throws BrianClientException If any errors are encountered in the client while making the request or handling the response.
 	 * @throws BrianServerException If any errors occurred in the service while processing the request.
 	 */
 	void deleteTrigger(TriggerKey key) throws BrianClientException, BrianServerException;
 	
 	/**
-	 * TODO for daisuke
+	 * Force fire trigger.
 	 * 
 	 * @param key trigger key to force fire
+	 * @throws BrianClientException not found - trigger to update not found
 	 * @throws BrianClientException If any errors are encountered in the client while making the request or handling the response.
 	 * @throws BrianServerException If any errors occurred in the service while processing the request.
 	 */

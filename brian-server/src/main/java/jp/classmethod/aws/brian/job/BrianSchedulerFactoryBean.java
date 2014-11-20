@@ -20,10 +20,17 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 
+/**
+ * {@link FactoryBean} for {@link Scheduler}.
+ * 
+ * @since 1.0
+ * @author daisuke
+ */
 public class BrianSchedulerFactoryBean extends SchedulerFactoryBean {
 	
 	private static Logger logger = LoggerFactory.getLogger(SchedulerFactoryBean.class);

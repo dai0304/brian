@@ -22,12 +22,23 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 
+/**
+ * TODO for daisuke
+ * 
+ * @author daisuke
+ * @since 1.0
+ */
 @Configuration
 @EnableAutoConfiguration
 @ImportResource("classpath:/applicationContext.xml")
 public class BrianApplication {
 	
-	
+	/**
+	 * Main method.
+	 * 
+	 * @param args ignored
+	 * @since 1.0
+	 */
 	public static void main(String[] args) {
 		SpringApplication.run(BrianApplication.class, args);
 	}

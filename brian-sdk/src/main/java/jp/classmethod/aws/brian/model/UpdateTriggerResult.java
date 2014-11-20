@@ -17,46 +17,66 @@ package jp.classmethod.aws.brian.model;
 
 import java.time.Instant;
 
+/**
+ * TODO for daisuke
+ * 
+ * @author daisuke
+ * @since 1.0
+ */
 public class UpdateTriggerResult {
 	
 	Instant nextFireTime;
 	
 	
+	/**
+	 * Create update-trigger action result.
+	 * 
+	 * @param nextFireTime the time that the trigger fire next
+	 * @since 1.0
+	 */
 	public UpdateTriggerResult(Instant nextFireTime) {
 		this.nextFireTime = nextFireTime;
 	}
 	
+	/**
+	 * Return the time that the trigger fire next
+	 * 
+	 * @return the time that the trigger fire next
+	 * @since 1.0
+	 */
 	public Instant getNextFireTime() {
 		return nextFireTime;
 	}
-
+	
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((nextFireTime == null) ? 0 : nextFireTime.hashCode());
-		return result;
+		return nextFireTime == null ? 0 : nextFireTime.hashCode();
 	}
-
+	
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		UpdateTriggerResult other = (UpdateTriggerResult) obj;
 		if (nextFireTime == null) {
-			if (other.nextFireTime != null)
+			if (other.nextFireTime != null) {
 				return false;
-		} else if (!nextFireTime.equals(other.nextFireTime))
+			}
+		} else if (!nextFireTime.equals(other.nextFireTime)) {
 			return false;
+		}
 		return true;
 	}
-
+	
 	@Override
 	public String toString() {
-		return "CreateTriggerResult [nextFireTime=" + nextFireTime + "]";
+		return "UpdateTriggerResult [nextFireTime=" + nextFireTime + "]";
 	}
 }
