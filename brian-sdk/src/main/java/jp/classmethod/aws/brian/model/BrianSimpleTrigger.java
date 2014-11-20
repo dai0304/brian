@@ -17,6 +17,12 @@ package jp.classmethod.aws.brian.model;
 
 import java.util.Date;
 
+/**
+ * TODO for daisuke
+ * 
+ * @author daisuke
+ * @since 1.0
+ */
 public class BrianSimpleTrigger extends BrianTrigger {
 	
 	private long repeatInterval;
@@ -66,7 +72,7 @@ public class BrianSimpleTrigger extends BrianTrigger {
 		request.handleUnknown("repeatCount", repeatCount);
 		return request;
 	}
-
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -75,23 +81,28 @@ public class BrianSimpleTrigger extends BrianTrigger {
 		result = prime * result + (int) (repeatInterval ^ (repeatInterval >>> 32));
 		return result;
 	}
-
+	
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (!super.equals(obj))
+		}
+		if (!super.equals(obj)) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		BrianSimpleTrigger other = (BrianSimpleTrigger) obj;
-		if (repeatCount != other.repeatCount)
+		if (repeatCount != other.repeatCount) {
 			return false;
-		if (repeatInterval != other.repeatInterval)
+		}
+		if (repeatInterval != other.repeatInterval) {
 			return false;
+		}
 		return true;
 	}
-
+	
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();

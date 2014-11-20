@@ -17,8 +17,6 @@ package jp.classmethod.aws.brian.web;
 
 import javax.servlet.http.HttpServletRequest;
 
-import jp.classmethod.aws.brian.model.BrianResponse;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

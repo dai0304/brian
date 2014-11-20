@@ -24,6 +24,12 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * TODO for daisuke
+ * 
+ * @author daisuke
+ * @since 1.0
+ */
 public class BrianTriggerRequest {
 	
 	@JsonProperty
@@ -126,12 +132,11 @@ public class BrianTriggerRequest {
 	public String getTriggerName() {
 		return triggerName;
 	}
-
 	
 	public void setTriggerName(String triggerName) {
 		this.triggerName = triggerName;
 	}
-
+	
 	@Override
 	public String toString() {
 		return "BrianTriggerRequest [triggerName=" + triggerName + ", scheduleType=" + scheduleType + ", priority="

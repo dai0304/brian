@@ -18,6 +18,12 @@ package jp.classmethod.aws.brian.model;
 import java.util.Date;
 import java.util.Map;
 
+/**
+ * TODO for daisuke
+ * 
+ * @author daisuke
+ * @since 1.0
+ */
 public class BrianMessage {
 	
 	private final String brianVersion;

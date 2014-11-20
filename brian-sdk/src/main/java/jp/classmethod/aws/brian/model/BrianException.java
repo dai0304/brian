@@ -15,26 +15,34 @@
  */
 package jp.classmethod.aws.brian.model;
 
-
+/**
+ * TODO for daisuke
+ * 
+ * @author daisuke
+ * @since 1.0
+ */
 @SuppressWarnings("serial")
 public abstract class BrianException extends Exception {
-
+	
+	/**
+	 * TODO for daisuke
+	 * 
+	 * @author daisuke
+	 * @since 1.0
+	 */
 	public BrianException() {
 		super();
 	}
-
+	
 	public BrianException(String message, Throwable cause) {
 		super(message, cause);
 	}
-
+	
 	public BrianException(String message) {
 		super(message);
 	}
-
+	
 	public BrianException(Throwable cause) {
 		super(cause);
-	}
-	protected BrianException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
 	}
 }

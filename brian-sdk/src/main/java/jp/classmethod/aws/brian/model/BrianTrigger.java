@@ -19,6 +19,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * TODO for daisuke
+ * 
+ * @author daisuke
+ * @since 1.0
+ */
 public abstract class BrianTrigger extends TriggerKey {
 	
 	final int priority = 5;
@@ -36,9 +42,10 @@ public abstract class BrianTrigger extends TriggerKey {
 	final Map<String, Object> jobData = new HashMap<>();
 	
 	
-	BrianTrigger(String group, String name, String misfireInstruction, String description, Date startTime, Date endTime,
+	BrianTrigger(String group, String name, String misfireInstruction, String description, Date startTime,
+			Date endTime,
 			Date finalFireTime) {
-		super(group,name);
+		super(group, name);
 		this.misfireInstruction = misfireInstruction;
 		this.description = description;
 		this.startTime = startTime;
@@ -67,7 +74,7 @@ public abstract class BrianTrigger extends TriggerKey {
 	}
 	
 	public abstract BrianTriggerRequest toBrianTriggerRequest();
-
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -81,48 +88,64 @@ public abstract class BrianTrigger extends TriggerKey {
 		result = prime * result + ((startTime == null) ? 0 : startTime.hashCode());
 		return result;
 	}
-
+	
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (!super.equals(obj))
+		}
+		if (!super.equals(obj)) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		BrianTrigger other = (BrianTrigger) obj;
 		if (description == null) {
-			if (other.description != null)
+			if (other.description != null) {
 				return false;
-		} else if (!description.equals(other.description))
+			}
+		} else if (!description.equals(other.description)) {
 			return false;
+		}
 		if (endTime == null) {
-			if (other.endTime != null)
+			if (other.endTime != null) {
 				return false;
-		} else if (!endTime.equals(other.endTime))
+			}
+		} else if (!endTime.equals(other.endTime)) {
 			return false;
+		}
 		if (finalFireTime == null) {
-			if (other.finalFireTime != null)
+			if (other.finalFireTime != null) {
 				return false;
-		} else if (!finalFireTime.equals(other.finalFireTime))
+			}
+		} else if (!finalFireTime.equals(other.finalFireTime)) {
 			return false;
+		}
 		if (jobData == null) {
-			if (other.jobData != null)
+			if (other.jobData != null) {
 				return false;
-		} else if (!jobData.equals(other.jobData))
+			}
+		} else if (!jobData.equals(other.jobData)) {
 			return false;
+		}
 		if (misfireInstruction == null) {
-			if (other.misfireInstruction != null)
+			if (other.misfireInstruction != null) {
 				return false;
-		} else if (!misfireInstruction.equals(other.misfireInstruction))
+			}
+		} else if (!misfireInstruction.equals(other.misfireInstruction)) {
 			return false;
-		if (priority != other.priority)
+		}
+		if (priority != other.priority) {
 			return false;
+		}
 		if (startTime == null) {
-			if (other.startTime != null)
+			if (other.startTime != null) {
 				return false;
-		} else if (!startTime.equals(other.startTime))
+			}
+		} else if (!startTime.equals(other.startTime)) {
 			return false;
+		}
 		return true;
 	}
 }

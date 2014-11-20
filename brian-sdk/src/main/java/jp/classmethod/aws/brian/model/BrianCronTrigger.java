@@ -18,6 +18,12 @@ package jp.classmethod.aws.brian.model;
 import java.util.Date;
 import java.util.TimeZone;
 
+/**
+ * TODO for daisuke
+ * 
+ * @author daisuke
+ * @since 1.0
+ */
 public class BrianCronTrigger extends BrianTrigger {
 	
 	final TimeZone timeZone;
@@ -31,7 +37,7 @@ public class BrianCronTrigger extends BrianTrigger {
 		this.timeZone = timeZone;
 		this.cronExpression = cronExpression;
 	}
-
+	
 	public TimeZone getTimeZone() {
 		return timeZone;
 	}
@@ -57,50 +63,59 @@ public class BrianCronTrigger extends BrianTrigger {
 		return request;
 	}
 	
+	
 	public static class BrianCronTriggerBuilder {
 		
 		private String group;
+		
 		private String name;
+		
 		private String misfireInstruction;
+		
 		private String description;
+		
 		private TimeZone timeZone;
+		
 		private String cronExpression;
-
+		
+		
 		public BrianCronTrigger build() {
-			return new BrianCronTrigger(group, name, misfireInstruction, description, null, null, null, timeZone, cronExpression);
+			return new BrianCronTrigger(group, name, misfireInstruction, description, null, null, null, timeZone,
+					cronExpression);
 		}
-
+		
 		public BrianCronTriggerBuilder withTriggerGroupName(String group) {
 			this.group = group;
 			return this;
 		}
-
+		
 		public BrianCronTriggerBuilder withTriggerName(String name) {
 			this.name = name;
 			return this;
 		}
-
+		
 		public BrianCronTriggerBuilder withMisfireInstruction(String misfireInstruction) {
 			this.misfireInstruction = misfireInstruction;
 			return this;
 		}
-
+		
 		public BrianCronTriggerBuilder withDescription(String description) {
 			this.description = description;
 			return this;
 		}
-
+		
 		public BrianCronTriggerBuilder withTimeZone(TimeZone timeZone) {
 			this.timeZone = timeZone;
 			return this;
 		}
-
+		
 		public BrianCronTriggerBuilder withCronExpression(String cronExpression) {
 			this.cronExpression = cronExpression;
 			return this;
 		}
 	}
-
+	
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -109,29 +124,36 @@ public class BrianCronTrigger extends BrianTrigger {
 		result = prime * result + ((timeZone == null) ? 0 : timeZone.hashCode());
 		return result;
 	}
-
+	
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (!super.equals(obj))
+		}
+		if (!super.equals(obj)) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		BrianCronTrigger other = (BrianCronTrigger) obj;
 		if (cronExpression == null) {
-			if (other.cronExpression != null)
+			if (other.cronExpression != null) {
 				return false;
-		} else if (!cronExpression.equals(other.cronExpression))
+			}
+		} else if (!cronExpression.equals(other.cronExpression)) {
 			return false;
+		}
 		if (timeZone == null) {
-			if (other.timeZone != null)
+			if (other.timeZone != null) {
 				return false;
-		} else if (!timeZone.equals(other.timeZone))
+			}
+		} else if (!timeZone.equals(other.timeZone)) {
 			return false;
+		}
 		return true;
 	}
-
+	
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
