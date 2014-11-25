@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
 /**
  * Custom {@link ObjectMapper} implementation for Brian.
@@ -43,6 +44,7 @@ public class BrianClientObjectMapper extends ObjectMapper {
 	public BrianClientObjectMapper() {
 		SimpleModule brianModule = new SimpleModule("brianClientModule", VERSION);
 		registerModule(brianModule);
+		registerModule(new Jdk8Module());
 		
 		configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);

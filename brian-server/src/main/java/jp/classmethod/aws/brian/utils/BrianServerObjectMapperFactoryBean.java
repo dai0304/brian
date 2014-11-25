@@ -25,6 +25,7 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
 import org.quartz.Trigger;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
@@ -52,6 +53,7 @@ public class BrianServerObjectMapperFactoryBean extends AbstractFactoryBean<Obje
 		SimpleModule brianModule = new SimpleModule("brianServerModule", VERSION);
 		brianModule.addSerializer(Trigger.class, new TriggerSerializer());
 		mapper.registerModule(brianModule);
+		mapper.registerModule(new Jdk8Module());
 		
 		mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);

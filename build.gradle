@@ -22,7 +22,7 @@ plugins {
 allprojects {
 	apply plugin: 'base'
 	group = 'jp.classmethod.aws.brian'
-	version = '0.11'
+	version = '0.12'
 }
 
 def javaProjects() {
@@ -52,6 +52,7 @@ configure(javaProjects()) {
 		springBootVersion = '1.1.8.RELEASE'
 		mysqlVersion = '5.1.22'
 		guavaVersion = '18.0'
+		jacksonVersion = '2.4.3'
 		quartzVersion = '2.2.0'
 		gsonVersion = '2.2.2'
 		baseunitsVersion = '2.13'

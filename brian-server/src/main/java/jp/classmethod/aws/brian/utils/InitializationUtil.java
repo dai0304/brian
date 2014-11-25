@@ -63,7 +63,7 @@ public class InitializationUtil {
 	/**
 	 * Validate if all system properties required by application is specified.
 	 * 
-	 * @param requiredSystemProperties
+	 * @param requiredSystemProperties list of required system property keys
 	 * @throws IllegalStateException if exists insufficient properties
 	 * @since 1.0
 	 */

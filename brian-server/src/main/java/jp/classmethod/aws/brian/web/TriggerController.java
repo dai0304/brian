@@ -29,10 +29,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
+import jp.classmethod.aws.brian.model.BrianTrigger;
 import jp.classmethod.aws.brian.model.BrianTriggerRequest;
+import jp.classmethod.aws.brian.utils.BrianFactory;
 import jp.xet.baseunits.time.CalendarUtil;
 import jp.xet.baseunits.time.TimePoint;
 import jp.xet.baseunits.util.TimeZones;
+
+import com.amazonaws.services.sns.AmazonSNS;
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.gson.Gson;
 
 import org.quartz.CronExpression;
 import org.quartz.CronScheduleBuilder;
@@ -60,14 +70,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import com.amazonaws.services.sns.AmazonSNS;
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.gson.Gson;
 
 /**
  * Controller implementation to operate trigger groups and triggers.
@@ -106,7 +108,7 @@ public class TriggerController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/triggers", method = RequestMethod.GET)
-	public BrianResponse<List<String>> getTriggerGroups() throws SchedulerException {
+	public BrianResponse<List<String>> listTriggerGroups() throws SchedulerException {
 		logger.info("getTriggerGroups");
 		
 		List<String> triggerGroupNames = scheduler.getTriggerGroupNames();
@@ -125,7 +127,7 @@ public class TriggerController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/triggers/{triggerGroupName}", method = RequestMethod.GET)
-	public BrianResponse<List<String>> getTriggerNames(@PathVariable("triggerGroupName") String triggerGroupName)
+	public BrianResponse<List<String>> listTriggers(@PathVariable("triggerGroupName") String triggerGroupName)
 			throws SchedulerException {
 		logger.info("getTriggerNames {}", triggerGroupName);
 		
@@ -159,17 +161,20 @@ public class TriggerController {
 		
 		List<String> triggersFailed = new ArrayList<>();
 		
-		List<String> triggerNames = getTriggerNames(triggerGroupName).getContent();
+		List<String> triggerNames = listTriggers(triggerGroupName).getContent();
 		for (String triggerName : triggerNames) {
 			TriggerKey triggerKey = TriggerKey.triggerKey(triggerName, triggerGroupName);
 			boolean deleted = scheduler.unscheduleJob(triggerKey);
-			if (deleted == false) triggersFailed.add(triggerName);
+			if (deleted == false) {
+				triggersFailed.add(triggerName);
+			}
 		}
 		
 		if (triggersFailed.size() == 0) {
 			return new ResponseEntity<>(new BrianResponse<>(true, "ok"), HttpStatus.OK);
 		} else {
-			String message = String.format("following trigger(s) unschedule failed: %s", Joiner.on(", ").join(triggersFailed));
+			String message =
+					String.format("following trigger(s) unschedule failed: %s", Joiner.on(", ").join(triggersFailed));
 			return new ResponseEntity<>(new BrianResponse<>(false, message), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -277,7 +282,7 @@ public class TriggerController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/triggers/{triggerGroupName}/{triggerName}", method = RequestMethod.GET, produces = "application/json")
-	public ResponseEntity<?> getTrigger(
+	public ResponseEntity<?> describeTrigger(
 			@PathVariable("triggerGroupName") String triggerGroupName,
 			@PathVariable("triggerName") String triggerName)
 			throws SchedulerException {
@@ -289,9 +294,9 @@ public class TriggerController {
 		if (trigger == null) {
 			throw new ResourceNotFoundException();
 		}
+		BrianTrigger brianTrigger = BrianFactory.createBrianTrigger(trigger);
 		
-		logger.info("ok");
-		return new ResponseEntity<>(trigger, HttpStatus.OK);
+		return new ResponseEntity<>(brianTrigger, HttpStatus.OK);
 	}
 	
 	/**
@@ -321,7 +326,8 @@ public class TriggerController {
 		if (deleted) {
 			return new ResponseEntity<>(new BrianResponse<>(true, "ok"), HttpStatus.OK);
 		} else {
-			return new ResponseEntity<>(new BrianResponse<>(false, "unschedule failed"), HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>(new BrianResponse<>(false, "unschedule failed"),
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
@@ -405,11 +411,16 @@ public class TriggerController {
 		if (triggerRequest.getMisfireInstruction() != null) {
 			switch (triggerRequest.getMisfireInstruction()) {
 				case "IGNORE":
+				case "IGNORE_MISFIRE_POLICY":
 					return cronSchedule.withMisfireHandlingInstructionIgnoreMisfires();
-				case "DO_NOTHING":
-					return cronSchedule.withMisfireHandlingInstructionDoNothing();
+				case "SMART_POLICY":
+				default:
+					// do nothing
+					return cronSchedule;
 				case "FIRE_ONCE_NOW":
 					return cronSchedule.withMisfireHandlingInstructionFireAndProceed();
+				case "DO_NOTHING":
+					return cronSchedule.withMisfireHandlingInstructionDoNothing();
 			}
 		}
 		return cronSchedule;
@@ -437,17 +448,22 @@ public class TriggerController {
 		if (triggerRequest.getMisfireInstruction() != null) {
 			switch (triggerRequest.getMisfireInstruction()) {
 				case "IGNORE":
+				case "IGNORE_MISFIRE_POLICY":
 					return simpleSchedule.withMisfireHandlingInstructionIgnoreMisfires();
+				case "SMART_POLICY":
+				default:
+					// do nothing
+					return simpleSchedule;
 				case "FIRE_NOW":
 					return simpleSchedule.withMisfireHandlingInstructionFireNow();
-				case "RESCHEDULE_NEXT_WITH_EXISTING_COUNT":
-					return simpleSchedule.withMisfireHandlingInstructionNextWithExistingCount();
-				case "RESCHEDULE_NEXT_WITH_REMAINING_COUNT":
-					return simpleSchedule.withMisfireHandlingInstructionNextWithRemainingCount();
 				case "RESCHEDULE_NOW_WITH_EXISTING_REPEAT_COUNT":
 					return simpleSchedule.withMisfireHandlingInstructionNowWithExistingCount();
 				case "RESCHEDULE_NOW_WITH_REMAINING_REPEAT_COUNT":
 					return simpleSchedule.withMisfireHandlingInstructionNowWithRemainingCount();
+				case "RESCHEDULE_NEXT_WITH_REMAINING_COUNT":
+					return simpleSchedule.withMisfireHandlingInstructionNextWithRemainingCount();
+				case "RESCHEDULE_NEXT_WITH_EXISTING_COUNT":
+					return simpleSchedule.withMisfireHandlingInstructionNextWithExistingCount();
 			}
 		}
 		return simpleSchedule;
@@ -458,7 +474,12 @@ public class TriggerController {
 		if (triggerRequest.getMisfireInstruction() != null) {
 			switch (triggerRequest.getMisfireInstruction()) {
 				case "IGNORE":
+				case "IGNORE_MISFIRE_POLICY":
 					return oneShotSchedule.withMisfireHandlingInstructionIgnoreMisfires();
+				case "SMART_POLICY":
+				default:
+					// do nothing
+					return oneShotSchedule;
 				case "FIRE_NOW":
 					return oneShotSchedule.withMisfireHandlingInstructionFireNow();
 			}

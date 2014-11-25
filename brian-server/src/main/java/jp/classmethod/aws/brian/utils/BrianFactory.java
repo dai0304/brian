@@ -3,13 +3,13 @@ package jp.classmethod.aws.brian.utils;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.TimeZone;
 
 import jp.classmethod.aws.brian.BrianClient;
 import jp.classmethod.aws.brian.model.BrianCronTrigger;
 import jp.classmethod.aws.brian.model.BrianMessage;
 import jp.classmethod.aws.brian.model.BrianSimpleTrigger;
 import jp.classmethod.aws.brian.model.BrianTrigger;
+import jp.classmethod.aws.brian.model.MisFireInstruction;
 
 import org.quartz.CronTrigger;
 import org.quartz.JobExecutionContext;
@@ -19,11 +19,20 @@ import org.quartz.Trigger;
 public final class BrianFactory {
 	
 	public static BrianCronTrigger createBrianCronTrigger(CronTrigger trigger) {
-		TimeZone timeZone = trigger.getTimeZone();
-		String cronExpression = trigger.getCronExpression();
-		return new BrianCronTrigger(trigger.getKey().getGroup(), trigger.getKey().getName(),
-				toString(trigger.getMisfireInstruction()), trigger.getDescription(), trigger.getStartTime(),
-				trigger.getEndTime(), trigger.getFinalFireTime(), timeZone, cronExpression);
+		MisFireInstruction misFireInstruction =
+				MisFireInstruction.fromNumberAndClass(trigger.getMisfireInstruction(), BrianCronTrigger.class);
+		
+		return new BrianCronTrigger.BrianCronTriggerBuilder()
+			.withTriggerGroupName(trigger.getKey().getGroup())
+			.withTriggerName(trigger.getKey().getName())
+			.withMisfireInstruction(misFireInstruction)
+			.withDescription(trigger.getDescription())
+			.withStartAt(trigger.getStartTime())
+			.withEndAt(trigger.getEndTime())
+			.withJobData(trigger.getJobDataMap())
+			.withTimeZone(trigger.getTimeZone())
+			.withCronExpression(trigger.getCronExpression())
+			.build();
 	}
 	
 	public static BrianMessage createBrianMessage(JobExecutionContext context) {
@@ -33,7 +42,7 @@ public final class BrianFactory {
 		Date nextFireTime = context.getNextFireTime();
 		int refireCount = context.getRefireCount();
 		boolean recovering = context.isRecovering();
-		BrianTrigger trigger = greateBrianTrigger(context.getTrigger());
+		BrianTrigger trigger = createBrianTrigger(context.getTrigger());
 		String fireInstanceId = context.getFireInstanceId();
 		Map<String, Object> jobData = new LinkedHashMap<>(context.getMergedJobDataMap());
 		return new BrianMessage(BrianClient.getVersionString(), fireTime, scheduledFireTime, prevFireTime,
@@ -41,11 +50,20 @@ public final class BrianFactory {
 	}
 	
 	public static BrianSimpleTrigger createBrianSimpleTrigger(SimpleTrigger trigger) {
-		long repeatInterval = trigger.getRepeatInterval();
-		int repeatCount = trigger.getRepeatCount();
-		return new BrianSimpleTrigger(trigger.getKey().getGroup(), trigger.getKey().getName(),
-				toString(trigger.getMisfireInstruction()), trigger.getDescription(), trigger.getStartTime(),
-				trigger.getEndTime(), trigger.getFinalFireTime(), repeatInterval, repeatCount);
+		MisFireInstruction misFireInstruction =
+				MisFireInstruction.fromNumberAndClass(trigger.getMisfireInstruction(), BrianSimpleTrigger.class);
+		
+		return new BrianSimpleTrigger.BrianSimpleTriggerBuilder()
+			.withTriggerGroupName(trigger.getKey().getGroup())
+			.withTriggerName(trigger.getKey().getName())
+			.withMisfireInstruction(misFireInstruction)
+			.withDescription(trigger.getDescription())
+			.withStartAt(trigger.getStartTime())
+			.withEndAt(trigger.getEndTime())
+			.withJobData(trigger.getJobDataMap())
+			.withRepeatInterval(trigger.getRepeatInterval())
+			.withRepeatCount(trigger.getRepeatCount())
+			.build();
 	}
 	
 	/**
@@ -54,17 +72,12 @@ public final class BrianFactory {
 	 * @param trigger
 	 * @return {@link BrianTrigger}
 	 */
-	public static BrianTrigger greateBrianTrigger(Trigger trigger) {
+	public static BrianTrigger createBrianTrigger(Trigger trigger) {
 		if (trigger instanceof CronTrigger) {
 			return createBrianCronTrigger((CronTrigger) trigger);
 		} else if (trigger instanceof SimpleTrigger) {
 			return createBrianSimpleTrigger((SimpleTrigger) trigger);
 		}
-		return null;
-	}
-	
-	private static String toString(int misfireInstruction) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 	

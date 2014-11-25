@@ -18,59 +18,64 @@ package jp.classmethod.aws.brian.model;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
- * TODO for daisuke
+ * Trigger descriptor model.
  * 
  * @author daisuke
  * @since 1.0
  */
 public abstract class BrianTrigger extends TriggerKey {
 	
-	final int priority = 5;
+	String description;
 	
-	final String description;
+	int priority = 5;
 	
-	final Date startTime;
+	Optional<Date> startTime;
 	
-	final Date endTime;
+	Optional<Date> endTime;
 	
-	final String misfireInstruction;
+	Optional<MisFireInstruction> misfireInstruction;
 	
-	final Date finalFireTime;
-	
-	final Map<String, Object> jobData = new HashMap<>();
+	Map<String, Object> jobData;
 	
 	
-	BrianTrigger(String group, String name, String misfireInstruction, String description, Date startTime,
-			Date endTime,
-			Date finalFireTime) {
+	BrianTrigger(String group, String name, Optional<MisFireInstruction> misfireInstruction, String description,
+			Optional<Date> startAt, Optional<Date> endAt, Map<String, Object> jobData) {
 		super(group, name);
 		this.misfireInstruction = misfireInstruction;
 		this.description = description;
-		this.startTime = startTime;
-		this.endTime = endTime;
-		this.finalFireTime = finalFireTime;
+		startTime = startAt;
+		endTime = endAt;
+		this.jobData = jobData;
 	}
 	
-	public String getMisfireInstruction() {
-		return misfireInstruction;
+	BrianTrigger() {
 	}
 	
 	public String getDescription() {
 		return description;
 	}
 	
-	public Date getStartTime() {
+	public int getPriority() {
+		return priority;
+	}
+	
+	public Optional<Date> getStartTime() {
 		return startTime;
 	}
 	
-	public Date getEndTime() {
+	public Optional<Date> getEndTime() {
 		return endTime;
 	}
 	
-	public Date getFinalFireTime() {
-		return finalFireTime;
+	public Optional<MisFireInstruction> getMisfireInstruction() {
+		return misfireInstruction;
+	}
+	
+	public Map<String, Object> getJobData() {
+		return jobData;
 	}
 	
 	public abstract BrianTriggerRequest toBrianTriggerRequest();
@@ -81,7 +86,6 @@ public abstract class BrianTrigger extends TriggerKey {
 		int result = super.hashCode();
 		result = prime * result + ((description == null) ? 0 : description.hashCode());
 		result = prime * result + ((endTime == null) ? 0 : endTime.hashCode());
-		result = prime * result + ((finalFireTime == null) ? 0 : finalFireTime.hashCode());
 		result = prime * result + ((jobData == null) ? 0 : jobData.hashCode());
 		result = prime * result + ((misfireInstruction == null) ? 0 : misfireInstruction.hashCode());
 		result = prime * result + priority;
@@ -115,13 +119,6 @@ public abstract class BrianTrigger extends TriggerKey {
 		} else if (!endTime.equals(other.endTime)) {
 			return false;
 		}
-		if (finalFireTime == null) {
-			if (other.finalFireTime != null) {
-				return false;
-			}
-		} else if (!finalFireTime.equals(other.finalFireTime)) {
-			return false;
-		}
 		if (jobData == null) {
 			if (other.jobData != null) {
 				return false;
@@ -147,5 +144,70 @@ public abstract class BrianTrigger extends TriggerKey {
 			return false;
 		}
 		return true;
+	}
+	
+	
+	@SuppressWarnings("unchecked")
+	protected static abstract class BrianTriggerBuilder<T extends BrianTriggerBuilder<T, U>, U> {
+		
+		protected String group;
+		
+		protected String name;
+		
+		protected Optional<MisFireInstruction> misfireInstruction = Optional.empty();
+		
+		protected String description;
+		
+		protected Optional<Date> startAt = Optional.empty();
+		
+		protected Optional<Date> endAt = Optional.empty();
+		
+		protected Map<String, Object> jobData = new HashMap<>();
+		
+		
+		public abstract U build();
+		
+		public T withTriggerGroupName(String group) {
+			this.group = group;
+			return (T) this;
+		}
+		
+		public T withTriggerName(String name) {
+			this.name = name;
+			return (T) this;
+		}
+		
+		public T withMisfireInstruction(MisFireInstruction misfireInstruction) {
+			this.misfireInstruction = Optional.ofNullable(misfireInstruction);
+			return (T) this;
+		}
+		
+		public T withDescription(String description) {
+			this.description = description;
+			return (T) this;
+		}
+		
+		public T withStartAt(Date startAt) {
+			this.startAt = Optional.ofNullable(startAt);
+			return (T) this;
+		}
+		
+		public T withEndAt(Date endAt) {
+			this.endAt = Optional.ofNullable(endAt);
+			return (T) this;
+		}
+		
+		public T withJobData(Map<String, Object> jobData) {
+			if (jobData == null) {
+				throw new IllegalArgumentException("jobData is null"); //$NON-NLS-1$
+			}
+			this.jobData = jobData;
+			return (T) this;
+		}
+		
+		public T withJobData(String key, Object value) {
+			jobData.put(key, value);
+			return (T) this;
+		}
 	}
 }

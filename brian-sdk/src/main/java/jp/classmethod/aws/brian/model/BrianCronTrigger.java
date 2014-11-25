@@ -16,32 +16,63 @@
 package jp.classmethod.aws.brian.model;
 
 import java.util.Date;
+import java.util.Map;
+import java.util.Optional;
 import java.util.TimeZone;
 
 /**
- * TODO for daisuke
+ * Cron trigger model.
  * 
  * @author daisuke
  * @since 1.0
  */
 public class BrianCronTrigger extends BrianTrigger {
 	
-	final TimeZone timeZone;
+	private static final TimeZone DEFAULT_TIME_ZONE = TimeZone.getTimeZone("Universal");
 	
-	final String cronExpression;
+	Optional<TimeZone> timeZone;
+	
+	String cronExpression;
 	
 	
-	public BrianCronTrigger(String group, String name, String misfireInstruction, String description, Date startTime,
-			Date endTime, Date finalFireTime, TimeZone timeZone, String cronExpression) {
-		super(group, name, misfireInstruction, description, startTime, endTime, finalFireTime);
+	/**
+	 * Create instance.
+	 * 
+	 * @param group trigger group name
+	 * @param name trigger name
+	 * @param misfireInstruction {@link MisFireInstruction}
+	 * @param description trigger description
+	 * @param startAt the time at which the trigger should occur.
+	 * @param endAt the time at which the trigger should quit repeating - regardless of any remaining repeats (based on the trigger's particular repeat settings).
+	 * @param jobData
+	 * @param timeZone the time zone for which the {@link #cronExpression} of this cron trigger will be resolved.
+	 * @param cronExpression the expression of cron
+	 */
+	public BrianCronTrigger(String group, String name, Optional<MisFireInstruction> misfireInstruction,
+			String description, Optional<Date> startAt, Optional<Date> endAt, Map<String, Object> jobData,
+			Optional<TimeZone> timeZone, String cronExpression) {
+		super(group, name, misfireInstruction, description, startAt, endAt, jobData);
 		this.timeZone = timeZone;
 		this.cronExpression = cronExpression;
 	}
 	
-	public TimeZone getTimeZone() {
+	BrianCronTrigger() {
+	}
+	
+	/**
+	 * Returns the time zone for which the {@link #cronExpression} of this cron trigger will be resolved.
+	 * 
+	 * @return the time zone
+	 */
+	public Optional<TimeZone> getTimeZone() {
 		return timeZone;
 	}
 	
+	/**
+	 * Returns the expression of cron.
+	 * 
+	 * @return the expression of cron
+	 */
 	public String getCronExpression() {
 		return cronExpression;
 	}
@@ -53,68 +84,15 @@ public class BrianCronTrigger extends BrianTrigger {
 		request.setScheduleType(ScheduleType.cron);
 		request.setPriority(priority);
 		request.setDescription(description);
-		request.setStartAt(startTime);
-		request.setEndAt(endTime);
-		request.setMisfireInstruction(misfireInstruction);
+		startTime.ifPresent(v -> request.setStartAt(v));
+		endTime.ifPresent(v -> request.setEndAt(v));
+		request.setMisfireInstruction(misfireInstruction.orElse(MisFireInstruction.SMART_POLICY).name());
 		request.setJobData(jobData);
 		
 		request.handleUnknown("cronEx", cronExpression);
-		request.handleUnknown("timeZone", timeZone == null ? null : timeZone.getID());
+		request.handleUnknown("timeZone", timeZone.orElse(DEFAULT_TIME_ZONE).getID());
 		return request;
 	}
-	
-	
-	public static class BrianCronTriggerBuilder {
-		
-		private String group;
-		
-		private String name;
-		
-		private String misfireInstruction;
-		
-		private String description;
-		
-		private TimeZone timeZone;
-		
-		private String cronExpression;
-		
-		
-		public BrianCronTrigger build() {
-			return new BrianCronTrigger(group, name, misfireInstruction, description, null, null, null, timeZone,
-					cronExpression);
-		}
-		
-		public BrianCronTriggerBuilder withTriggerGroupName(String group) {
-			this.group = group;
-			return this;
-		}
-		
-		public BrianCronTriggerBuilder withTriggerName(String name) {
-			this.name = name;
-			return this;
-		}
-		
-		public BrianCronTriggerBuilder withMisfireInstruction(String misfireInstruction) {
-			this.misfireInstruction = misfireInstruction;
-			return this;
-		}
-		
-		public BrianCronTriggerBuilder withDescription(String description) {
-			this.description = description;
-			return this;
-		}
-		
-		public BrianCronTriggerBuilder withTimeZone(TimeZone timeZone) {
-			this.timeZone = timeZone;
-			return this;
-		}
-		
-		public BrianCronTriggerBuilder withCronExpression(String cronExpression) {
-			this.cronExpression = cronExpression;
-			return this;
-		}
-	}
-	
 	
 	@Override
 	public int hashCode() {
@@ -164,10 +142,35 @@ public class BrianCronTrigger extends BrianTrigger {
 			.append(", getDescription()=").append(getDescription())
 			.append(", getStartTime()=").append(getStartTime())
 			.append(", getEndTime()=").append(getEndTime())
-			.append(", getFinalFireTime()=").append(getFinalFireTime())
 			.append(", timeZone=").append(timeZone)
 			.append(", cronExpression=").append(cronExpression)
 			.append("]");
 		return builder.toString();
+	}
+	
+	
+	public static class BrianCronTriggerBuilder
+			extends BrianTriggerBuilder<BrianCronTriggerBuilder, BrianCronTrigger> {
+		
+		private Optional<TimeZone> timeZone = Optional.empty();
+		
+		private String cronExpression;
+		
+		
+		@Override
+		public BrianCronTrigger build() {
+			return new BrianCronTrigger(group, name, misfireInstruction, description,
+					startAt, endAt, jobData, timeZone, cronExpression);
+		}
+		
+		public BrianCronTriggerBuilder withTimeZone(TimeZone timeZone) {
+			this.timeZone = Optional.ofNullable(timeZone);
+			return this;
+		}
+		
+		public BrianCronTriggerBuilder withCronExpression(String cronExpression) {
+			this.cronExpression = cronExpression;
+			return this;
+		}
 	}
 }

@@ -16,9 +16,13 @@
 package jp.classmethod.aws.brian.model;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
 
 /**
- * TODO for daisuke
+ * Simple trigger model.
  * 
  * @author daisuke
  * @since 1.0
@@ -31,27 +35,39 @@ public class BrianSimpleTrigger extends BrianTrigger {
 	
 	
 	/**
-	 * @param group
-	 * @param name
-	 * @param misfireInstruction
-	 * @param description
-	 * @param startTime
-	 * @param endTime
-	 * @param finalFireTime
-	 * @param repeatInterval
-	 * @param repeatCount
+	 * 
+	 * @param group trigger group name
+	 * @param name trigger name
+	 * @param misfireInstruction {@link MisFireInstruction}
+	 * @param description trigger description
+	 * @param startAt the time at which the trigger should occur.
+	 * @param endAt the time at which the trigger should quit repeating - regardless of any remaining repeats (based on the trigger's particular repeat settings).
+	 * @param jobData
+	 * @param repeatInterval the the time interval (in milliseconds) at which the <code>SimpleTrigger</code> should repeat.
+	 * @param repeatCount the the number of times the trigger should repeat, after which it will be automatically deleted.
 	 */
-	public BrianSimpleTrigger(String group, String name, String misfireInstruction, String description, Date startTime,
-			Date endTime, Date finalFireTime, long repeatInterval, int repeatCount) {
-		super(group, name, misfireInstruction, description, startTime, endTime, finalFireTime);
+	public BrianSimpleTrigger(String group, String name, Optional<MisFireInstruction> misfireInstruction,
+			String description, Optional<Date> startAt, Optional<Date> endAt, Map<String, Object> jobData,
+			long repeatInterval, int repeatCount) {
+		super(group, name, misfireInstruction, description, startAt, endAt, jobData);
 		this.repeatInterval = repeatInterval;
 		this.repeatCount = repeatCount;
 	}
 	
+	/**
+	 * Returns the the time interval (in milliseconds) at which the <code>SimpleTrigger</code> should repeat.
+	 * 
+	 * @return the the time interval (in milliseconds)
+	 */
 	public long getRepeatInterval() {
 		return repeatInterval;
 	}
 	
+	/**
+	 * Returns the the number of times the trigger should repeat, after which it will be automatically deleted.
+	 * 
+	 * @return the the number of times the trigger should repeat
+	 */
 	public int getRepeatCount() {
 		return repeatCount;
 	}
@@ -63,9 +79,9 @@ public class BrianSimpleTrigger extends BrianTrigger {
 		request.setScheduleType(ScheduleType.cron);
 		request.setPriority(priority);
 		request.setDescription(description);
-		request.setStartAt(startTime);
-		request.setEndAt(endTime);
-		request.setMisfireInstruction(misfireInstruction);
+		startTime.ifPresent(v -> request.setStartAt(v));
+		endTime.ifPresent(v -> request.setEndAt(v));
+		request.setMisfireInstruction(misfireInstruction.orElse(MisFireInstruction.SMART_POLICY).name());
 		request.setJobData(jobData);
 		
 		request.handleUnknown("repeatInterval", repeatInterval);
@@ -113,10 +129,50 @@ public class BrianSimpleTrigger extends BrianTrigger {
 			.append(", getDescription()=").append(getDescription())
 			.append(", getStartTime()=").append(getStartTime())
 			.append(", getEndTime()=").append(getEndTime())
-			.append(", getFinalFireTime()=").append(getFinalFireTime())
 			.append(", repeatInterval=").append(repeatInterval)
 			.append(", repeatCount=").append(repeatCount)
 			.append("]");
 		return builder.toString();
+	}
+	
+	
+	public static class BrianSimpleTriggerBuilder
+			extends BrianTriggerBuilder<BrianSimpleTriggerBuilder, BrianSimpleTrigger> {
+		
+		private String group;
+		
+		private String name;
+		
+		private Optional<MisFireInstruction> misfireInstruction = Optional.empty();
+		
+		private String description;
+		
+		private Optional<Date> startAt = Optional.empty();
+		
+		private Optional<Date> endAt = Optional.empty();
+		
+		private Map<String, Object> jobData = new HashMap<>();
+		
+		private long repeatInterval = 1000;
+		
+		private int repeatCount = 1;
+		
+		
+		@Override
+		public BrianSimpleTrigger build() {
+			return new BrianSimpleTrigger(group, name, misfireInstruction, description,
+					startAt, endAt, new LinkedHashMap<>(jobData),
+					repeatInterval, repeatCount);
+		}
+		
+		public BrianSimpleTriggerBuilder withRepeatInterval(long repeatInterval) {
+			this.repeatInterval = repeatInterval;
+			return this;
+		}
+		
+		public BrianSimpleTriggerBuilder withRepeatCount(int repeatCount) {
+			this.repeatCount = repeatCount;
+			return this;
+		}
 	}
 }

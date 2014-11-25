@@ -23,9 +23,9 @@ package jp.classmethod.aws.brian.model;
  */
 public class TriggerKey {
 	
-	final String group;
+	String group;
 	
-	final String name;
+	String name;
 	
 	
 	/**
@@ -38,6 +38,9 @@ public class TriggerKey {
 	public TriggerKey(String group, String name) {
 		this.group = group;
 		this.name = name;
+	}
+	
+	TriggerKey() {
 	}
 	
 	/**

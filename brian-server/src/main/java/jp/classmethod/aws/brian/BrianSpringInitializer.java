@@ -35,14 +35,14 @@ import org.springframework.web.servlet.DispatcherServlet;
 
 /**
  * TODO for daisuke
- * 
+ *
  * @author daisuke
  * @since 1.0
  */
 public class BrianSpringInitializer implements WebApplicationInitializer {
-	
+
 	private static Logger logger = LoggerFactory.getLogger(BrianSpringInitializer.class);
-	
+
 	private static final Collection<String> REQUIRED_SYSTEM_PROPERTIES = Collections.unmodifiableCollection(
 		Arrays.asList(
 				"JDBC_CONNECTION_STRING",
@@ -50,11 +50,11 @@ public class BrianSpringInitializer implements WebApplicationInitializer {
 				"DB_PASSWORD",
 				"BRIAN_TOPIC_ARN"
 			));
-	
-	
+
+
 	/**
 	 * TODO for daisuke
-	 * 
+	 *
 	 * @param container {@link ServletContext}
 	 * @param createApplicationContext {@code true} to create {@link WebApplicationContext}
 	 * @since 1.0
@@ -63,13 +63,13 @@ public class BrianSpringInitializer implements WebApplicationInitializer {
 		logger.info("Starting up brian v{}", Version.getVersionString());
 		InitializationUtil.logAllProperties();
 		InitializationUtil.validateExistRequiredSystemProperties(REQUIRED_SYSTEM_PROPERTIES);
-		
+
 		if (createApplicationContext) {
 			XmlWebApplicationContext rootContext = new XmlWebApplicationContext();
 			rootContext.setConfigLocations("classpath*:applicationContext.xml");
 			container.addListener(new ContextLoaderListener(rootContext));
 		}
-		
+
 		XmlWebApplicationContext dispatcherContext = new XmlWebApplicationContext();
 		dispatcherContext.setConfigLocations(new String[] {
 			"/WEB-INF/dispatcher-servlet.xml"
@@ -78,7 +78,7 @@ public class BrianSpringInitializer implements WebApplicationInitializer {
 		dispatcher.setLoadOnStartup(1);
 		dispatcher.addMapping("/");
 	}
-	
+
 	@Override
 	@SuppressWarnings("unused")
 	public void onStartup(ServletContext container) throws ServletException {
