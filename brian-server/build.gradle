@@ -55,6 +55,7 @@ dependencies {
 	// Other
 	compile "mysql:mysql-connector-java:$mysqlVersion"
 	compile "com.google.guava:guava:$guavaVersion"
+	compile "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$jacksonVersion"
 	compile "commons-dbcp:commons-dbcp:1.4"
 	compile "com.google.code.gson:gson:$gsonVersion"
 	compile "com.amazonaws:aws-java-sdk-sns:$awsJavaSdkVersion"

@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -51,7 +52,6 @@ import jp.classmethod.aws.brian.model.BrianSimpleTrigger;
 import jp.classmethod.aws.brian.model.BrianTrigger;
 import jp.classmethod.aws.brian.model.BrianTriggerRequest;
 import jp.classmethod.aws.brian.model.CreateTriggerResult;
-import jp.classmethod.aws.brian.model.ScheduleType;
 import jp.classmethod.aws.brian.model.TriggerKey;
 import jp.classmethod.aws.brian.model.UpdateTriggerResult;
 import jp.classmethod.aws.brian.util.BrianClientObjectMapper;
@@ -157,6 +157,7 @@ public class BrianClient implements Brian {
 	
 	@Override
 	public boolean isAvailable() {
+		logger.info("is available?");
 		try {
 			URI uri = new URI(scheme, null, hostname, port, "/", null, null);
 			HttpUriRequest httpRequest = RequestBuilder.get().setUri(uri).build();
@@ -172,6 +173,7 @@ public class BrianClient implements Brian {
 	
 	@Override
 	public List<String> listTriggerGroups() throws BrianClientException, BrianServerException {
+		logger.info("list trigger groups: {}");
 		try {
 			URI uri = new URI(scheme, null, hostname, port, "/triggers", null, null);
 			HttpUriRequest httpRequest = RequestBuilder.get().setUri(uri).build();
@@ -200,6 +202,7 @@ public class BrianClient implements Brian {
 	
 	@Override
 	public List<String> listTriggers(String group) throws BrianClientException, BrianServerException {
+		logger.info("list triggers: {}", group);
 		try {
 			String path = String.format("/triggers/%s", group);
 			URI uri = new URI(scheme, null, hostname, port, path, null, null);
@@ -230,10 +233,11 @@ public class BrianClient implements Brian {
 	
 	@Override
 	public CreateTriggerResult createTrigger(BrianTrigger trigger) throws BrianClientException, BrianServerException {
+		logger.info("creaet: {}/{}", trigger.getGroup(), trigger.getName());
 		try {
 			BrianTriggerRequest request = trigger.toBrianTriggerRequest();
 			String requestBody = mapper.writeValueAsString(request);
-			logger.info("requestBody = {}", requestBody);
+			logger.info("create: requestBody = {}", requestBody);
 			HttpEntity entity = new StringEntity(requestBody);
 			
 			String path = String.format("/triggers/%s", trigger.getGroup());
@@ -245,7 +249,7 @@ public class BrianClient implements Brian {
 			JsonNode tree = mapper.readTree(httpResponse.getEntity().getContent());
 			if (statusCode == HttpStatus.SC_CREATED) {
 				String nextFireTime = tree.path("content").path("nextFireTime").asText();
-				logger.info("nextFireTime = {}", nextFireTime);
+				logger.info("created: nextFireTime = {}", nextFireTime);
 				return new CreateTriggerResult(Instant.parse(nextFireTime));
 			} else if (statusCode >= 500) {
 				throw new BrianServerException(String.format("status = %d; message = %s", new Object[] {
@@ -281,10 +285,11 @@ public class BrianClient implements Brian {
 	
 	@Override
 	public UpdateTriggerResult updateTrigger(BrianTrigger trigger) throws BrianClientException, BrianServerException {
+		logger.info("update: {}/{}", trigger.getGroup(), trigger.getName());
 		try {
 			BrianTriggerRequest request = trigger.toBrianTriggerRequest();
 			String requestBody = mapper.writeValueAsString(request);
-			logger.info("requestBody = {}", requestBody);
+			logger.info("update: requestBody = {}", requestBody);
 			HttpEntity entity = new StringEntity(requestBody);
 			
 			String path = String.format("/triggers/%s/%s", trigger.getGroup(), trigger.getName());
@@ -296,7 +301,7 @@ public class BrianClient implements Brian {
 			JsonNode tree = mapper.readTree(httpResponse.getEntity().getContent());
 			if (statusCode == HttpStatus.SC_OK) {
 				String nextFireTime = tree.path("content").path("nextFireTime").asText();
-				logger.info("nextFireTime = {}", nextFireTime);
+				logger.info("updated: nextFireTime = {}", nextFireTime);
 				return new UpdateTriggerResult(Instant.parse(nextFireTime));
 			} else if (statusCode >= 500) {
 				throw new BrianServerException(String.format("status = %d; message = %s", new Object[] {
@@ -331,7 +336,8 @@ public class BrianClient implements Brian {
 	}
 	
 	@Override
-	public BrianTrigger describeTrigger(TriggerKey key) throws BrianClientException, BrianServerException {
+	public Optional<BrianTrigger> describeTrigger(TriggerKey key) throws BrianClientException, BrianServerException {
+		logger.info("describe: {}", key);
 		try {
 			String path = String.format("/triggers/%s/%s", key.getGroup(), key.getName());
 			URI uri = new URI(scheme, null, hostname, port, path, null, null);
@@ -340,20 +346,17 @@ public class BrianClient implements Brian {
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			JsonNode tree = mapper.readTree(httpResponse.getEntity().getContent());
 			if (statusCode == HttpStatus.SC_OK) {
-				String scheduleType = tree.path("scheduleType").textValue();
-				if (scheduleType.equals(ScheduleType.cron.name())) {
-					return mapper.readValue(new TreeTraversingParser(tree), BrianCronTrigger.class);
-				} else if (scheduleType.equals(ScheduleType.cron.name())) {
-					return mapper.readValue(new TreeTraversingParser(tree), BrianSimpleTrigger.class);
+				if (tree.path("cronExpression").isMissingNode() == false) {
+					return Optional.of(mapper.readValue(new TreeTraversingParser(tree), BrianCronTrigger.class));
+				} else if (tree.path("repeatCount").isMissingNode() == false) {
+					return Optional.of(mapper.readValue(new TreeTraversingParser(tree), BrianSimpleTrigger.class));
 				}
-				throw new Error("unknown scheduleType: " + scheduleType);
+				// TODO deserialize
+				throw new Error("unknown scheduleType");
 			} else if (statusCode >= 500) {
 				throw new BrianServerException("status = " + statusCode);
 			} else if (statusCode == HttpStatus.SC_NOT_FOUND) {
-				throw new BrianClientException(String.format("triggerKey (%s/%s) is not found", new Object[] {
-					key.getGroup(),
-					key.getName()
-				}));
+				return Optional.empty();
 			} else if (statusCode >= 400) {
 				throw new BrianClientException("status = " + statusCode);
 			} else {
@@ -372,6 +375,7 @@ public class BrianClient implements Brian {
 	
 	@Override
 	public void deleteTrigger(TriggerKey key) throws BrianClientException, BrianServerException {
+		logger.info("delete: {}", key);
 		try {
 			String path = String.format("/triggers/%s/%s", key.getGroup(), key.getName());
 			URI uri = new URI(scheme, null, hostname, port, path, null, null);
@@ -379,6 +383,7 @@ public class BrianClient implements Brian {
 			HttpResponse httpResponse = httpClientSupplier.get().execute(httpRequest);
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			if (statusCode == HttpStatus.SC_OK) {
+				logger.info("deleted: {}", key);
 				return;
 			} else if (statusCode >= 500) {
 				throw new BrianServerException("status = " + statusCode);
@@ -405,6 +410,7 @@ public class BrianClient implements Brian {
 	
 	@Override
 	public void forceFireTrigger(TriggerKey key) throws BrianClientException, BrianServerException {
+		logger.info("force fire: {}", key);
 		try {
 			String path = String.format("/triggers/%s/%s", key.getGroup(), key.getName());
 			URI uri = new URI(scheme, null, hostname, port, path, null, null);
@@ -412,6 +418,7 @@ public class BrianClient implements Brian {
 			HttpResponse httpResponse = httpClientSupplier.get().execute(httpRequest);
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			if (statusCode == HttpStatus.SC_OK) {
+				logger.info("force fired: {}", key);
 				return;
 			} else if (statusCode >= 500) {
 				throw new BrianServerException("status = " + statusCode);

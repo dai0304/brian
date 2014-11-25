@@ -16,6 +16,7 @@
 package jp.classmethod.aws.brian;
 
 import java.util.List;
+import java.util.Optional;
 
 import jp.classmethod.aws.brian.model.BrianClientException;
 import jp.classmethod.aws.brian.model.BrianServerException;
@@ -89,7 +90,7 @@ public interface Brian {
 	 * @throws BrianClientException If any errors are encountered in the client while making the request or handling the response.
 	 * @throws BrianServerException If any errors occurred in the service while processing the request.
 	 */
-	BrianTrigger describeTrigger(TriggerKey key) throws BrianClientException, BrianServerException;
+	Optional<BrianTrigger> describeTrigger(TriggerKey key) throws BrianClientException, BrianServerException;
 	
 	/**
 	 * Delete trigger.
