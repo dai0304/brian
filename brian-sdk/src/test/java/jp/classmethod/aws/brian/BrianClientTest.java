@@ -82,10 +82,10 @@ public class BrianClientTest {
 		BrianCronTrigger trigger = new BrianCronTriggerBuilder()
 			.withTriggerGroupName("g1")
 			.withTriggerName("t1")
-			.withCronExpression("*/20 * * * * ?")
+			.withCronExpression("*/30 * * * * ?")
 			.build();
 		long es = Instant.now().getEpochSecond();
-		Instant next = Instant.ofEpochSecond(es - (es % 20) + 20);
+		Instant next = Instant.ofEpochSecond(es - (es % 30) + 30);
 		CreateTriggerResult expected = new CreateTriggerResult(next);
 		try {
 			// Exercise
@@ -123,7 +123,7 @@ public class BrianClientTest {
 			assertThat(brianTrigger.getName(), is("t1"));
 			assertThat(brianTrigger, is(instanceOf(BrianCronTrigger.class)));
 			BrianCronTrigger brianCronTrigger = BrianCronTrigger.class.cast(brianTrigger);
-			assertThat(brianCronTrigger.getCronExpression(), is("*/20 * * * * ?"));
+			assertThat(brianCronTrigger.getCronExpression(), is("*/30 * * * * ?"));
 			assertThat(brianCronTrigger.getTimeZone().get().getID(), is("Universal"));
 		} finally {
 			// TearDown
@@ -162,7 +162,7 @@ public class BrianClientTest {
 		sut.createTrigger(new BrianCronTriggerBuilder()
 			.withTriggerGroupName("g1")
 			.withTriggerName("t1")
-			.withCronExpression("*/20 * * * * ?")
+			.withCronExpression("*/30 * * * * ?")
 			//			.withTimeZone(TimeZone.getTimeZone("Universal"))
 			.build());
 	}
@@ -171,7 +171,3 @@ public class BrianClientTest {
 		sut.deleteTrigger(new TriggerKey("g1", "t1"));
 	}
 }
-/*
-BrianCronTrigger [getGroup()=g1, getName()=t1, getMisfireInstruction()=Optional[SMART_POLICY], getDescription()=null, getStartTime()=Optional[Tue Nov 25 17:44:03 JST 2014], getEndTime()=Optional.empty, timeZone=Optional[sun.util.calendar.ZoneInfo[id="GMT",offset=0,dstSavings=0,useDaylight=false,transitions=0,lastRule=null]], cronExpression=*20 * * * * ?
-
- */
