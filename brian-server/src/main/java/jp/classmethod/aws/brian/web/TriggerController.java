@@ -274,11 +274,12 @@ public class TriggerController {
 		
 		TriggerKey triggerKey = TriggerKey.triggerKey(triggerName, triggerGroupName);
 		Trigger trigger = scheduler.getTrigger(triggerKey);
-		logger.info("{}", trigger);
+		logger.info("quartz trigger = {}", trigger);
 		if (trigger == null) {
 			throw new ResourceNotFoundException();
 		}
 		BrianTrigger brianTrigger = BrianFactory.createBrianTrigger(trigger);
+		logger.info("brian trigger = {}", trigger);
 		
 		return new ResponseEntity<>(brianTrigger, HttpStatus.OK);
 	}
