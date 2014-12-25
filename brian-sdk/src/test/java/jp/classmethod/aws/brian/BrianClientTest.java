@@ -10,20 +10,17 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import jp.classmethod.aws.brian.model.BrianClientException;
 import jp.classmethod.aws.brian.model.BrianCronTrigger;
 import jp.classmethod.aws.brian.model.BrianCronTrigger.BrianCronTriggerBuilder;
+import jp.classmethod.aws.brian.model.BrianSimpleTrigger;
 import jp.classmethod.aws.brian.model.BrianTrigger;
 import jp.classmethod.aws.brian.model.CreateTriggerResult;
 import jp.classmethod.aws.brian.model.TriggerKey;
 
 @SuppressWarnings("javadoc")
 public class BrianClientTest {
-	
-	private static Logger logger = LoggerFactory.getLogger(BrianClientTest.class);
 	
 	BrianClient sut = new BrianClient("localhost", 8080);
 	
@@ -39,7 +36,7 @@ public class BrianClientTest {
 	@Test
 	public void listTriggerGroups_with_1_trigger() throws Exception {
 		// SetUp
-		createTrigger();
+		createCronTrigger();
 		try {
 			// Exercise
 			List<String> actual = sut.listTriggerGroups();
@@ -48,7 +45,7 @@ public class BrianClientTest {
 			assertThat(actual.get(0), is("g1"));
 		} finally {
 			// TearDown
-			deleteTrigger();
+			deleteCronTrigger();
 		}
 	}
 	
@@ -63,7 +60,7 @@ public class BrianClientTest {
 	@Test
 	public void listTriggers_with_1_triggers() throws Exception {
 		// SetUp
-		createTrigger();
+		createCronTrigger();
 		try {
 			// Exercise
 			List<String> actual = sut.listTriggers("g1");
@@ -72,7 +69,7 @@ public class BrianClientTest {
 			assertThat(actual.get(0), is("t1"));
 		} finally {
 			// TearDown
-			deleteTrigger();
+			deleteCronTrigger();
 		}
 	}
 	
@@ -94,7 +91,7 @@ public class BrianClientTest {
 			assertThat(actual, is(expected));
 		} finally {
 			// TearDown
-			deleteTrigger();
+			deleteCronTrigger();
 		}
 	}
 	
@@ -109,10 +106,10 @@ public class BrianClientTest {
 	}
 	
 	@Test
-	public void describeTrigger_with_1_triggers() throws Exception {
+	public void describeTrigger_with_1_cron_triggers() throws Exception {
 		try {
 			// SetUp
-			createTrigger();
+			createCronTrigger();
 			TriggerKey key = new TriggerKey("g1", "t1");
 			// Exercise
 			Optional<BrianTrigger> trigger = sut.describeTrigger(key);
@@ -127,7 +124,30 @@ public class BrianClientTest {
 			assertThat(brianCronTrigger.getTimeZone().get().getID(), is("Universal"));
 		} finally {
 			// TearDown
-			deleteTrigger();
+			deleteCronTrigger();
+		}
+	}
+	
+	@Test
+	public void describeTrigger_with_1_simple_triggers() throws Exception {
+		try {
+			// SetUp
+			createSimpleTrigger();
+			TriggerKey key = new TriggerKey("g1", "t2");
+			// Exercise
+			Optional<BrianTrigger> trigger = sut.describeTrigger(key);
+			// Verify
+			assertThat(trigger.isPresent(), is(true));
+			BrianTrigger brianTrigger = trigger.get();
+			assertThat(brianTrigger.getGroup(), is("g1"));
+			assertThat(brianTrigger.getName(), is("t2"));
+			assertThat(brianTrigger, is(instanceOf(BrianSimpleTrigger.class)));
+			BrianSimpleTrigger brianSimpleTrigger = BrianSimpleTrigger.class.cast(brianTrigger);
+			assertThat(brianSimpleTrigger.getRepeatInterval(), is(300000L));
+			assertThat(brianSimpleTrigger.getRepeatCount(), is(-1));
+		} finally {
+			// TearDown
+			deleteSimpleTrigger();
 		}
 	}
 	
@@ -147,18 +167,18 @@ public class BrianClientTest {
 	@Test
 	public void deleteTrigger_with_1_triggers() throws Exception {
 		// SetUp
-		createTrigger();
+		createCronTrigger();
 		TriggerKey key = new TriggerKey("g1", "t1");
 		try {
 			// Exercise
 			sut.deleteTrigger(key);
 		} catch (Exception e) {
 			// TearDown
-			deleteTrigger();
+			deleteCronTrigger();
 		}
 	}
 	
-	private void createTrigger() throws Exception {
+	private void createCronTrigger() throws Exception {
 		sut.createTrigger(new BrianCronTriggerBuilder()
 			.withTriggerGroupName("g1")
 			.withTriggerName("t1")
@@ -167,7 +187,20 @@ public class BrianClientTest {
 			.build());
 	}
 	
-	private void deleteTrigger() throws Exception {
+	private void createSimpleTrigger() throws Exception {
+		sut.createTrigger(new BrianSimpleTrigger.BrianSimpleTriggerBuilder()
+			.withTriggerGroupName("g1")
+			.withTriggerName("t2")
+			.withRepeatInterval(300000)
+			.withRepeatCount(-1)
+			.build());
+	}
+	
+	private void deleteCronTrigger() throws Exception {
 		sut.deleteTrigger(new TriggerKey("g1", "t1"));
+	}
+	
+	private void deleteSimpleTrigger() throws Exception {
+		sut.deleteTrigger(new TriggerKey("g1", "t2"));
 	}
 }

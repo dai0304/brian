@@ -16,7 +16,6 @@
 package jp.classmethod.aws.brian.model;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -54,6 +53,9 @@ public class BrianSimpleTrigger extends BrianTrigger {
 		this.repeatCount = repeatCount;
 	}
 	
+	BrianSimpleTrigger() {
+	}
+	
 	/**
 	 * Returns the the time interval (in milliseconds) at which the <code>SimpleTrigger</code> should repeat.
 	 * 
@@ -76,7 +78,7 @@ public class BrianSimpleTrigger extends BrianTrigger {
 	public BrianTriggerRequest toBrianTriggerRequest() {
 		BrianTriggerRequest request = new BrianTriggerRequest();
 		request.setTriggerName(name);
-		request.setScheduleType(ScheduleType.cron);
+		request.setScheduleType(ScheduleType.simple);
 		request.setPriority(priority);
 		request.setDescription(description);
 		startTime.ifPresent(v -> request.setStartAt(v));
@@ -138,20 +140,6 @@ public class BrianSimpleTrigger extends BrianTrigger {
 	
 	public static class BrianSimpleTriggerBuilder
 			extends BrianTriggerBuilder<BrianSimpleTriggerBuilder, BrianSimpleTrigger> {
-		
-		private String group;
-		
-		private String name;
-		
-		private Optional<MisFireInstruction> misfireInstruction = Optional.empty();
-		
-		private String description;
-		
-		private Optional<Date> startAt = Optional.empty();
-		
-		private Optional<Date> endAt = Optional.empty();
-		
-		private Map<String, Object> jobData = new HashMap<>();
 		
 		private long repeatInterval = 1000;
 		
