@@ -17,7 +17,10 @@ package jp.classmethod.aws.brian.job;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import jp.classmethod.aws.brian.Version;
+import jp.classmethod.aws.brian.BrianClient;
+
+import com.amazonaws.services.sns.AmazonSNS;
+import com.google.gson.GsonBuilder;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,9 +33,9 @@ import org.quartz.JobExecutionContext;
 import org.quartz.Scheduler;
 import org.quartz.Trigger;
 
-import com.amazonaws.services.sns.AmazonSNS;
-import com.google.gson.GsonBuilder;
-
+/**
+ * TODO for daisuke
+ */
 @RunWith(MockitoJUnitRunner.class)
 public class BrianQuartzJobBeanTest {
 	
@@ -67,7 +70,7 @@ public class BrianQuartzJobBeanTest {
 		when(jobDetail.getJobDataMap()).thenReturn(jobDataMap);
 		String arn = "arn";
 		String expectedMessage = "{\"brianVersion\":\""
-				+ Version.getVersionString()
+				+ BrianClient.getVersionString()
 				+ "\",\"refireCount\":0,\"recovering\":false,\"jobData\":{}}";
 		sut.setGson(new GsonBuilder().create());
 		sut.setTopicArn(arn);

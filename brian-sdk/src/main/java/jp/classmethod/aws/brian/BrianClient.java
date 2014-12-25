@@ -182,7 +182,8 @@ public class BrianClient implements Brian {
 			logger.debug("statusCode: {}", statusCode);
 			if (statusCode == HttpStatus.SC_OK) {
 				JsonNode tree = mapper.readTree(httpResponse.getEntity().getContent());
-				return StreamSupport.stream(tree.path("content").spliterator(), false).map(item -> item.textValue())
+				return StreamSupport.stream(tree.spliterator(), false)
+					.map(item -> item.textValue())
 					.collect(Collectors.toList());
 			} else if (statusCode >= 500) {
 				throw new BrianServerException("status = " + statusCode);
@@ -212,7 +213,7 @@ public class BrianClient implements Brian {
 			logger.debug("statusCode: {}", statusCode);
 			if (statusCode == HttpStatus.SC_OK) {
 				JsonNode tree = mapper.readTree(httpResponse.getEntity().getContent());
-				return StreamSupport.stream(tree.path("content").spliterator(), false)
+				return StreamSupport.stream(tree.spliterator(), false)
 					.map(item -> item.textValue())
 					.collect(Collectors.toList());
 			} else if (statusCode >= 500) {
