@@ -43,6 +43,7 @@ import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -166,15 +167,20 @@ public class BrianClient implements Brian {
 	@Override
 	public boolean isAvailable() {
 		logger.debug("is available?");
+		HttpResponse httpResponse = null;
 		try {
 			URI uri = new URI(scheme, null, hostname, port, "/", null, null);
 			HttpUriRequest httpRequest = RequestBuilder.get().setUri(uri).build();
-			HttpResponse httpResponse = httpClientExecute(httpRequest);
+			httpResponse = httpClientExecute(httpRequest);
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			logger.debug("statusCode: {}", statusCode);
 			return statusCode == HttpStatus.SC_OK;
 		} catch (Exception e) {
 			logger.warn("{}: {}", e.getClass().getName(), e.getMessage());
+		} finally {
+			if (httpResponse != null) {
+				EntityUtils.consumeQuietly(httpResponse.getEntity());
+			}
 		}
 		return false;
 	}
@@ -182,10 +188,11 @@ public class BrianClient implements Brian {
 	@Override
 	public List<String> listTriggerGroups() throws BrianClientException, BrianServerException {
 		logger.debug("list trigger groups: {}");
+		HttpResponse httpResponse = null;
 		try {
 			URI uri = new URI(scheme, null, hostname, port, "/triggers", null, null);
 			HttpUriRequest httpRequest = RequestBuilder.get().setUri(uri).build();
-			HttpResponse httpResponse = httpClientExecute(httpRequest);
+			httpResponse = httpClientExecute(httpRequest);
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			logger.debug("statusCode: {}", statusCode);
 			if (statusCode == HttpStatus.SC_OK) {
@@ -206,17 +213,22 @@ public class BrianClient implements Brian {
 			throw new BrianServerException(e);
 		} catch (IllegalStateException e) {
 			throw new Error(e);
+		} finally {
+			if (httpResponse != null) {
+				EntityUtils.consumeQuietly(httpResponse.getEntity());
+			}
 		}
 	}
 	
 	@Override
 	public List<String> listTriggers(String group) throws BrianClientException, BrianServerException {
 		logger.debug("list triggers: {}", group);
+		HttpResponse httpResponse = null;
 		try {
 			String path = String.format("/triggers/%s", group);
 			URI uri = new URI(scheme, null, hostname, port, path, null, null);
 			HttpUriRequest httpRequest = RequestBuilder.get().setUri(uri).build();
-			HttpResponse httpResponse = httpClientExecute(httpRequest);
+			httpResponse = httpClientExecute(httpRequest);
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			logger.debug("statusCode: {}", statusCode);
 			if (statusCode == HttpStatus.SC_OK) {
@@ -237,12 +249,17 @@ public class BrianClient implements Brian {
 			throw new BrianServerException(e);
 		} catch (IllegalStateException e) {
 			throw new Error(e);
+		} finally {
+			if (httpResponse != null) {
+				EntityUtils.consumeQuietly(httpResponse.getEntity());
+			}
 		}
 	}
 	
 	@Override
 	public CreateTriggerResult createTrigger(BrianTrigger trigger) throws BrianClientException, BrianServerException {
 		logger.debug("create trigger: {}/{}", trigger.getGroup(), trigger.getName());
+		HttpResponse httpResponse = null;
 		try {
 			BrianTriggerRequest request = trigger.toBrianTriggerRequest();
 			String requestBody = mapper.writeValueAsString(request);
@@ -252,7 +269,7 @@ public class BrianClient implements Brian {
 			String path = String.format("/triggers/%s", trigger.getGroup());
 			URI uri = new URI(scheme, null, hostname, port, path, null, null);
 			HttpUriRequest httpRequest = RequestBuilder.post().setUri(uri).setEntity(entity).build();
-			HttpResponse httpResponse = httpClientExecute(httpRequest);
+			httpResponse = httpClientExecute(httpRequest);
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			logger.debug("statusCode: {}", statusCode);
 			JsonNode tree = mapper.readTree(httpResponse.getEntity().getContent());
@@ -289,12 +306,17 @@ public class BrianClient implements Brian {
 			throw new BrianServerException(e);
 		} catch (IllegalStateException e) {
 			throw new Error(e);
+		} finally {
+			if (httpResponse != null) {
+				EntityUtils.consumeQuietly(httpResponse.getEntity());
+			}
 		}
 	}
 	
 	@Override
 	public UpdateTriggerResult updateTrigger(BrianTrigger trigger) throws BrianClientException, BrianServerException {
 		logger.debug("update trigger: {}/{}", trigger.getGroup(), trigger.getName());
+		HttpResponse httpResponse = null;
 		try {
 			BrianTriggerRequest request = trigger.toBrianTriggerRequest();
 			String requestBody = mapper.writeValueAsString(request);
@@ -304,7 +326,7 @@ public class BrianClient implements Brian {
 			String path = String.format("/triggers/%s/%s", trigger.getGroup(), trigger.getName());
 			URI uri = new URI(scheme, null, hostname, port, path, null, null);
 			HttpUriRequest httpRequest = RequestBuilder.put().setUri(uri).setEntity(entity).build();
-			HttpResponse httpResponse = httpClientExecute(httpRequest);
+			httpResponse = httpClientExecute(httpRequest);
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			logger.debug("statusCode: {}", statusCode);
 			JsonNode tree = mapper.readTree(httpResponse.getEntity().getContent());
@@ -341,17 +363,22 @@ public class BrianClient implements Brian {
 			throw new BrianServerException(e);
 		} catch (IllegalStateException e) {
 			throw new Error(e);
+		} finally {
+			if (httpResponse != null) {
+				EntityUtils.consumeQuietly(httpResponse.getEntity());
+			}
 		}
 	}
 	
 	@Override
 	public Optional<BrianTrigger> describeTrigger(TriggerKey key) throws BrianClientException, BrianServerException {
 		logger.debug("describe trigger: {}", key);
+		HttpResponse httpResponse = null;
 		try {
 			String path = String.format("/triggers/%s/%s", key.getGroup(), key.getName());
 			URI uri = new URI(scheme, null, hostname, port, path, null, null);
 			HttpUriRequest httpRequest = RequestBuilder.get().setUri(uri).build();
-			HttpResponse httpResponse = httpClientExecute(httpRequest);
+			httpResponse = httpClientExecute(httpRequest);
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			JsonNode tree = mapper.readTree(httpResponse.getEntity().getContent());
 			if (statusCode == HttpStatus.SC_OK) {
@@ -379,17 +406,22 @@ public class BrianClient implements Brian {
 			throw new BrianServerException(e);
 		} catch (IllegalStateException e) {
 			throw new Error(e);
+		} finally {
+			if (httpResponse != null) {
+				EntityUtils.consumeQuietly(httpResponse.getEntity());
+			}
 		}
 	}
 	
 	@Override
 	public void deleteTrigger(TriggerKey key) throws BrianClientException, BrianServerException {
 		logger.debug("delete trigger: {}", key);
+		HttpResponse httpResponse = null;
 		try {
 			String path = String.format("/triggers/%s/%s", key.getGroup(), key.getName());
 			URI uri = new URI(scheme, null, hostname, port, path, null, null);
 			HttpUriRequest httpRequest = RequestBuilder.delete().setUri(uri).build();
-			HttpResponse httpResponse = httpClientExecute(httpRequest);
+			httpResponse = httpClientExecute(httpRequest);
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			if (statusCode == HttpStatus.SC_OK) {
 				logger.info("trigger deleted: {}", key);
@@ -414,17 +446,22 @@ public class BrianClient implements Brian {
 			throw new BrianServerException(e);
 		} catch (IllegalStateException e) {
 			throw new Error(e);
+		} finally {
+			if (httpResponse != null) {
+				EntityUtils.consumeQuietly(httpResponse.getEntity());
+			}
 		}
 	}
 	
 	@Override
 	public void forceFireTrigger(TriggerKey key) throws BrianClientException, BrianServerException {
 		logger.debug("force fire: {}", key);
+		HttpResponse httpResponse = null;
 		try {
 			String path = String.format("/triggers/%s/%s", key.getGroup(), key.getName());
 			URI uri = new URI(scheme, null, hostname, port, path, null, null);
 			HttpUriRequest httpRequest = RequestBuilder.post().setUri(uri).build();
-			HttpResponse httpResponse = httpClientExecute(httpRequest);
+			httpResponse = httpClientExecute(httpRequest);
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			if (statusCode == HttpStatus.SC_OK) {
 				logger.info("trigger force fired: {}", key);
@@ -449,6 +486,10 @@ public class BrianClient implements Brian {
 			throw new BrianServerException(e);
 		} catch (IllegalStateException e) {
 			throw new Error(e);
+		} finally {
+			if (httpResponse != null) {
+				EntityUtils.consumeQuietly(httpResponse.getEntity());
+			}
 		}
 	}
 	
