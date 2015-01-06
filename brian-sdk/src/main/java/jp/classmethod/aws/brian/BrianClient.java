@@ -35,6 +35,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -92,6 +93,8 @@ public class BrianClient implements Brian {
 	
 	private int connectionTimeout = 3000;
 	
+	private int connectionRequestTimeout = 3000;
+	
 	private final ObjectMapper mapper = new BrianClientObjectMapper();
 	
 	
@@ -130,6 +133,7 @@ public class BrianClient implements Brian {
 				RequestConfig requestConfig = RequestConfig.custom()
 					.setConnectTimeout(connectionTimeout)
 					.setSocketTimeout(socketTimeout)
+					.setConnectionRequestTimeout(connectionRequestTimeout)
 					.build();
 				logger.trace("requestConfig = {}", requestConfig);
 				
@@ -155,13 +159,17 @@ public class BrianClient implements Brian {
 		return httpClientSupplier.get();
 	}
 	
+	private HttpResponse httpClientExecute(HttpUriRequest httpRequest) throws ClientProtocolException, IOException {
+		return httpClientSupplier.get().execute(httpRequest);
+	}
+	
 	@Override
 	public boolean isAvailable() {
-		logger.info("is available?");
+		logger.debug("is available?");
 		try {
 			URI uri = new URI(scheme, null, hostname, port, "/", null, null);
 			HttpUriRequest httpRequest = RequestBuilder.get().setUri(uri).build();
-			HttpResponse httpResponse = httpClientSupplier.get().execute(httpRequest);
+			HttpResponse httpResponse = httpClientExecute(httpRequest);
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			logger.debug("statusCode: {}", statusCode);
 			return statusCode == HttpStatus.SC_OK;
@@ -173,11 +181,11 @@ public class BrianClient implements Brian {
 	
 	@Override
 	public List<String> listTriggerGroups() throws BrianClientException, BrianServerException {
-		logger.info("list trigger groups: {}");
+		logger.debug("list trigger groups: {}");
 		try {
 			URI uri = new URI(scheme, null, hostname, port, "/triggers", null, null);
 			HttpUriRequest httpRequest = RequestBuilder.get().setUri(uri).build();
-			HttpResponse httpResponse = httpClientSupplier.get().execute(httpRequest);
+			HttpResponse httpResponse = httpClientExecute(httpRequest);
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			logger.debug("statusCode: {}", statusCode);
 			if (statusCode == HttpStatus.SC_OK) {
@@ -203,12 +211,12 @@ public class BrianClient implements Brian {
 	
 	@Override
 	public List<String> listTriggers(String group) throws BrianClientException, BrianServerException {
-		logger.info("list triggers: {}", group);
+		logger.debug("list triggers: {}", group);
 		try {
 			String path = String.format("/triggers/%s", group);
 			URI uri = new URI(scheme, null, hostname, port, path, null, null);
 			HttpUriRequest httpRequest = RequestBuilder.get().setUri(uri).build();
-			HttpResponse httpResponse = httpClientSupplier.get().execute(httpRequest);
+			HttpResponse httpResponse = httpClientExecute(httpRequest);
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			logger.debug("statusCode: {}", statusCode);
 			if (statusCode == HttpStatus.SC_OK) {
@@ -234,23 +242,23 @@ public class BrianClient implements Brian {
 	
 	@Override
 	public CreateTriggerResult createTrigger(BrianTrigger trigger) throws BrianClientException, BrianServerException {
-		logger.info("creaet: {}/{}", trigger.getGroup(), trigger.getName());
+		logger.debug("create trigger: {}/{}", trigger.getGroup(), trigger.getName());
 		try {
 			BrianTriggerRequest request = trigger.toBrianTriggerRequest();
 			String requestBody = mapper.writeValueAsString(request);
-			logger.info("create: requestBody = {}", requestBody);
+			logger.trace("create: requestBody = {}", requestBody);
 			HttpEntity entity = new StringEntity(requestBody);
 			
 			String path = String.format("/triggers/%s", trigger.getGroup());
 			URI uri = new URI(scheme, null, hostname, port, path, null, null);
 			HttpUriRequest httpRequest = RequestBuilder.post().setUri(uri).setEntity(entity).build();
-			HttpResponse httpResponse = httpClientSupplier.get().execute(httpRequest);
+			HttpResponse httpResponse = httpClientExecute(httpRequest);
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			logger.debug("statusCode: {}", statusCode);
 			JsonNode tree = mapper.readTree(httpResponse.getEntity().getContent());
 			if (statusCode == HttpStatus.SC_CREATED) {
 				String nextFireTime = tree.path("content").path("nextFireTime").asText();
-				logger.info("created: nextFireTime = {}", nextFireTime);
+				logger.info("trigger created: nextFireTime = {}", nextFireTime);
 				return new CreateTriggerResult(Instant.parse(nextFireTime));
 			} else if (statusCode >= 500) {
 				throw new BrianServerException(String.format("status = %d; message = %s", new Object[] {
@@ -286,23 +294,23 @@ public class BrianClient implements Brian {
 	
 	@Override
 	public UpdateTriggerResult updateTrigger(BrianTrigger trigger) throws BrianClientException, BrianServerException {
-		logger.info("update: {}/{}", trigger.getGroup(), trigger.getName());
+		logger.debug("update trigger: {}/{}", trigger.getGroup(), trigger.getName());
 		try {
 			BrianTriggerRequest request = trigger.toBrianTriggerRequest();
 			String requestBody = mapper.writeValueAsString(request);
-			logger.info("update: requestBody = {}", requestBody);
+			logger.trace("update: requestBody = {}", requestBody);
 			HttpEntity entity = new StringEntity(requestBody);
 			
 			String path = String.format("/triggers/%s/%s", trigger.getGroup(), trigger.getName());
 			URI uri = new URI(scheme, null, hostname, port, path, null, null);
 			HttpUriRequest httpRequest = RequestBuilder.put().setUri(uri).setEntity(entity).build();
-			HttpResponse httpResponse = httpClientSupplier.get().execute(httpRequest);
+			HttpResponse httpResponse = httpClientExecute(httpRequest);
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			logger.debug("statusCode: {}", statusCode);
 			JsonNode tree = mapper.readTree(httpResponse.getEntity().getContent());
 			if (statusCode == HttpStatus.SC_OK) {
 				String nextFireTime = tree.path("content").path("nextFireTime").asText();
-				logger.info("updated: nextFireTime = {}", nextFireTime);
+				logger.info("trigger updated: nextFireTime = {}", nextFireTime);
 				return new UpdateTriggerResult(Instant.parse(nextFireTime));
 			} else if (statusCode >= 500) {
 				throw new BrianServerException(String.format("status = %d; message = %s", new Object[] {
@@ -338,12 +346,12 @@ public class BrianClient implements Brian {
 	
 	@Override
 	public Optional<BrianTrigger> describeTrigger(TriggerKey key) throws BrianClientException, BrianServerException {
-		logger.info("describe: {}", key);
+		logger.debug("describe trigger: {}", key);
 		try {
 			String path = String.format("/triggers/%s/%s", key.getGroup(), key.getName());
 			URI uri = new URI(scheme, null, hostname, port, path, null, null);
 			HttpUriRequest httpRequest = RequestBuilder.get().setUri(uri).build();
-			HttpResponse httpResponse = httpClientSupplier.get().execute(httpRequest);
+			HttpResponse httpResponse = httpClientExecute(httpRequest);
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			JsonNode tree = mapper.readTree(httpResponse.getEntity().getContent());
 			if (statusCode == HttpStatus.SC_OK) {
@@ -376,15 +384,15 @@ public class BrianClient implements Brian {
 	
 	@Override
 	public void deleteTrigger(TriggerKey key) throws BrianClientException, BrianServerException {
-		logger.info("delete: {}", key);
+		logger.debug("delete trigger: {}", key);
 		try {
 			String path = String.format("/triggers/%s/%s", key.getGroup(), key.getName());
 			URI uri = new URI(scheme, null, hostname, port, path, null, null);
 			HttpUriRequest httpRequest = RequestBuilder.delete().setUri(uri).build();
-			HttpResponse httpResponse = httpClientSupplier.get().execute(httpRequest);
+			HttpResponse httpResponse = httpClientExecute(httpRequest);
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			if (statusCode == HttpStatus.SC_OK) {
-				logger.info("deleted: {}", key);
+				logger.info("trigger deleted: {}", key);
 				return;
 			} else if (statusCode >= 500) {
 				throw new BrianServerException("status = " + statusCode);
@@ -411,15 +419,15 @@ public class BrianClient implements Brian {
 	
 	@Override
 	public void forceFireTrigger(TriggerKey key) throws BrianClientException, BrianServerException {
-		logger.info("force fire: {}", key);
+		logger.debug("force fire: {}", key);
 		try {
 			String path = String.format("/triggers/%s/%s", key.getGroup(), key.getName());
 			URI uri = new URI(scheme, null, hostname, port, path, null, null);
 			HttpUriRequest httpRequest = RequestBuilder.post().setUri(uri).build();
-			HttpResponse httpResponse = httpClientSupplier.get().execute(httpRequest);
+			HttpResponse httpResponse = httpClientExecute(httpRequest);
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			if (statusCode == HttpStatus.SC_OK) {
-				logger.info("force fired: {}", key);
+				logger.info("trigger force fired: {}", key);
 				return;
 			} else if (statusCode >= 500) {
 				throw new BrianServerException("status = " + statusCode);
@@ -487,7 +495,7 @@ public class BrianClient implements Brian {
 	/**
 	 * Set the socket timeout.
 	 * 
-	 * @param socketTimeout socket timeout
+	 * @param socketTimeout socket timeout (millisec)
 	 * @since 1.0
 	 */
 	public void setSocketTimeout(int socketTimeout) {
@@ -497,10 +505,20 @@ public class BrianClient implements Brian {
 	/**
 	 * Set the connection timeout.
 	 * 
-	 * @param connectionTimeout connection timeout
+	 * @param connectionTimeout connection timeout (millisec)
 	 * @since 1.0
 	 */
 	public void setConnectionTimeout(int connectionTimeout) {
 		this.connectionTimeout = connectionTimeout;
+	}
+	
+	/**
+	 * Set the connection request timeout.
+	 * 
+	 * @param connectionRequestTimeout connection timeout (millisec)
+	 * @since 1.0
+	 */
+	public void setConnectionRequestTimeout(int connectionRequestTimeout) {
+		this.connectionRequestTimeout = connectionRequestTimeout;
 	}
 }
