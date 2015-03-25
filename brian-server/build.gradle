@@ -1,11 +1,18 @@
 // -*- coding: utf-8; mode: groovy -*-
 
-defaultTasks 'clean', 'build'
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath "org.springframework.boot:spring-boot-gradle-plugin:1.2.1.RELEASE"
+	}
+}
 
 
 // ======== Generic ========
 ext.artifactId = 'brian-server'
-defaultTasks 'clean', 'build'
+defaultTasks 'clean', 'build', 'bootRun'
 
 
 // ======== Java ========
@@ -36,6 +43,10 @@ configurations {
 	providedRuntime
 }
 dependencies {
+	compile "org.springframework.boot:spring-boot-starter-actuator:$springBootVersion"
+	compile "org.springframework.boot:spring-boot-starter-jdbc:$springBootVersion"
+	compile "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
+	
 	// Logging
 	compile "org.slf4j:slf4j-api:$slf4jVersion"
 	compile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
@@ -47,10 +58,9 @@ dependencies {
 	
 	// Spring
 	compile "org.springframework:spring-context-support:$springVersion"
-	compile "org.springframework:spring-tx:$springVersion"
-	compile "org.springframework:spring-jdbc:$springVersion"
+//	compile "org.springframework:spring-tx:$springVersion"
+//	compile "org.springframework:spring-jdbc:$springVersion"
 	compile "org.springframework:spring-webmvc:$springVersion"
-	compile "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
 	
 	// Other
 	compile "mysql:mysql-connector-java:$mysqlVersion"
@@ -64,8 +74,8 @@ dependencies {
 	compile project(':brian-sdk')
 	
 	// Servlet API
-	providedCompile "javax.servlet:javax.servlet-api:$servletApiVersion"
-	providedRuntime "org.springframework.boot:spring-boot-starter-tomcat:1.1.8.RELEASE"
+//	providedCompile "javax.servlet:javax.servlet-api:$servletApiVersion"
+//	providedRuntime "org.springframework.boot:spring-boot-starter-tomcat:1.1.8.RELEASE"
 	
 	// Testing
 	testCompile "junit:junit:$junitVersion"
@@ -97,11 +107,15 @@ versionInjection {
 }
 
 
+// ======== Spring Boot ========
+apply plugin: 'spring-boot'
+
+
 // ======== packaging ========
-war {
+jar {
 	manifest {
 		attributes(
-			"Implementation-Title": project.name,
+			'Implementation-Title': artifactId,
 			"Implementation-Version": version,
 			"Implementation-Timestamp": new Date()
 		)
@@ -119,12 +133,12 @@ aws {
 	region 'ap-northeast-1'
 }
 
-task uploadWar(type: jp.classmethod.aws.gradle.s3.AmazonS3FileUploadTask, dependsOn: war) {
-	bucketName 'cm-public-eb-applications'
-	key "${artifactId}/${artifactId}-${version}.war"
-	file project.war.archivePath
-	overwrite project.version.endsWith('-SNAPSHOT')
-}
+//task uploadWar(type: jp.classmethod.aws.gradle.s3.AmazonS3FileUploadTask, dependsOn: war) {
+//	bucketName 'cm-public-eb-applications'
+//	key "${artifactId}/${artifactId}-${version}.war"
+//	file project.war.archivePath
+//	overwrite project.version.endsWith('-SNAPSHOT')
+//}
 
 task uploadDemoTemplate(type: jp.classmethod.aws.gradle.s3.AmazonS3FileUploadTask) {
 	bucketName 'cm-public-eb-applications'

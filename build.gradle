@@ -49,7 +49,7 @@ configure(javaProjects()) {
 
 		// spring framework
 		springVersion = '4.1.1.RELEASE'
-		springBootVersion = '1.1.8.RELEASE'
+		springBootVersion = '1.2.1.RELEASE'
 		mysqlVersion = '5.1.22'
 		guavaVersion = '18.0'
 		jacksonVersion = '2.4.3'
