@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.scheduling.quartz.JobDetailFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -59,6 +60,7 @@ public class QuartzConfiguration {
 	
 	
 	@Bean
+	@DependsOn("flyway")
 	public BrianSchedulerFactoryBean brianSchedulerFactoryBean() {
 		BrianSchedulerFactoryBean brianSchedulerFactoryBean = new BrianSchedulerFactoryBean();
 		brianSchedulerFactoryBean.setSchedulerName("BrianScheduler");

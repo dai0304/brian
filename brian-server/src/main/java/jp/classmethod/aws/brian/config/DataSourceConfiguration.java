@@ -19,6 +19,7 @@ package jp.classmethod.aws.brian.config;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
+import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -55,5 +56,12 @@ public class DataSourceConfiguration {
 		basicDataSource.setMaxIdle(10);
 		basicDataSource.setMinIdle(5);
 		return basicDataSource;
+	}
+	
+	@Bean(initMethod = "migrate")
+	public Flyway flyway() {
+		Flyway flyway = new Flyway();
+		flyway.setDataSource(dataSource());
+		return flyway;
 	}
 }
