@@ -91,7 +91,7 @@ public class TriggerController {
 	@Autowired
 	AmazonSNS sns;
 	
-	@Value("#{systemProperties['PARAM3'] ?: systemProperties['BRIAN_TOPIC_ARN']}")
+	@Value("#{systemProperties['BRIAN_TOPIC_ARN']}")
 	String topicArn;
 	
 	
@@ -99,7 +99,7 @@ public class TriggerController {
 	@ResponseBody
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public String throwableHandler(Throwable e) {
-		logger.error("", e);
+		logger.error("unexpected", e);
 		return e.getMessage();
 	}
 	
@@ -153,7 +153,8 @@ public class TriggerController {
 			throws SchedulerException {
 		logger.info("deleteTriggerGroup {}", triggerGroupName);
 		
-		Set<String> failed = listTriggers(triggerGroupName).stream()
+		List<String> triggers = listTriggers(triggerGroupName);
+		Set<String> failed = triggers.stream()
 			.filter(triggerName -> {
 				TriggerKey triggerKey = TriggerKey.triggerKey(triggerName, triggerGroupName);
 				try {
@@ -165,12 +166,14 @@ public class TriggerController {
 			}).collect(Collectors.toSet());
 		
 		if (failed.isEmpty()) {
-			return ResponseEntity.ok().build();
+			return ResponseEntity.ok(triggers);
 		}
-		
-		String message = String.format("following trigger(s) unschedule failed: %s",
-				failed.stream().collect(Collectors.joining(", ")));
-		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
+		Map<String, Object> map = new HashMap<>();
+		map.put("failed", failed);
+		map.put("deleted", triggers.stream().filter(t -> failed.contains(t) == false).collect(Collectors.toList()));
+		return ResponseEntity
+			.status(HttpStatus.INTERNAL_SERVER_ERROR)
+			.body(new BrianResponse<>(false, "failed to unschedule", map));
 	}
 	
 	/**
@@ -210,11 +213,11 @@ public class TriggerController {
 					TimePoint.ISO8601_FORMAT_UNIVERSAL, Locale.US, TimeZones.UNIVERSAL);
 			Map<String, Object> map = new HashMap<>();
 			map.put("nextFireTime", df.format(nextFireTime));
-			return new ResponseEntity<>(new BrianResponse<>(true, "created", map), HttpStatus.CREATED);
+			return new ResponseEntity<>(new BrianResponse<>(true, "created", map), HttpStatus.CREATED); // TODO return URI
 		} catch (ParseException e) {
 			logger.warn("parse cron expression failed", e);
 			String message = "parse cron expression failed - " + e.getMessage();
-			return new ResponseEntity<>(new BrianResponse<>(false, message), HttpStatus.BAD_REQUEST);
+			return ResponseEntity.badRequest().body(new BrianResponse<>(false, message));
 		}
 	}
 	
@@ -240,7 +243,7 @@ public class TriggerController {
 		if (triggerName.equals(triggerRequest.getTriggerName()) == false) {
 			String message = String.format("trigger names '%s' in the path and '%s' in the request body is not equal",
 					triggerName, triggerRequest.getTriggerName());
-			return new ResponseEntity<>(new BrianResponse<>(false, message), HttpStatus.BAD_REQUEST);
+			return ResponseEntity.badRequest().body(new BrianResponse<>(false, message));
 		}
 		
 		try {
@@ -257,11 +260,11 @@ public class TriggerController {
 			
 			Map<String, Object> map = new HashMap<>();
 			map.put("nextFireTime", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).format(nextFireTime));
-			return new ResponseEntity<>(new BrianResponse<>(true, "ok", map), HttpStatus.OK);
+			return ResponseEntity.ok(new BrianResponse<>(true, "ok", map));
 		} catch (ParseException e) {
 			logger.warn("parse cron expression failed", e);
 			String message = "parse cron expression failed - " + e.getMessage();
-			return new ResponseEntity<>(new BrianResponse<>(false, message), HttpStatus.BAD_REQUEST);
+			return ResponseEntity.badRequest().body(new BrianResponse<>(false, message));
 		}
 	}
 	
@@ -291,7 +294,7 @@ public class TriggerController {
 		BrianTrigger brianTrigger = BrianFactory.createBrianTrigger(trigger);
 		logger.info("brian trigger = {}", trigger);
 		
-		return new ResponseEntity<>(brianTrigger, HttpStatus.OK);
+		return ResponseEntity.ok(brianTrigger);
 	}
 	
 	/**
@@ -312,17 +315,16 @@ public class TriggerController {
 		
 		TriggerKey triggerKey = TriggerKey.triggerKey(triggerName, triggerGroupName);
 		if (scheduler.checkExists(triggerKey) == false) {
-			String message = String.format("trigger %s.%s is not found.", triggerGroupName, triggerName);
-			return new ResponseEntity<>(new BrianResponse<>(false, message), HttpStatus.NOT_FOUND);
+			return ResponseEntity.notFound().build();
 		}
 		
 		boolean deleted = scheduler.unscheduleJob(triggerKey);
 		
 		if (deleted) {
-			return new ResponseEntity<>(new BrianResponse<>(true, "ok"), HttpStatus.OK);
+			return ResponseEntity.ok(new BrianResponse<>(true, "ok"));
 		} else {
-			return new ResponseEntity<>(new BrianResponse<>(false, "unschedule failed"),
-					HttpStatus.INTERNAL_SERVER_ERROR);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new BrianResponse<>(false, "unschedule failed"));
 		}
 	}
 	
@@ -344,7 +346,7 @@ public class TriggerController {
 		scheduler.triggerJob(quartzJob.getKey(), trigger.getJobDataMap());
 		
 		Map<String, Object> map = new HashMap<>();
-		return new ResponseEntity<>(new BrianResponse<>(true, "ok", map), HttpStatus.OK);
+		return ResponseEntity.ok(new BrianResponse<>(true, "ok", map));
 	}
 	
 	private Trigger getTrigger(BrianTriggerRequest triggerRequest, TriggerKey triggerKey) throws ParseException {
@@ -382,7 +384,7 @@ public class TriggerController {
 	public ResponseEntity<?> resumeScheduler() throws SchedulerException {
 		scheduler.resumeAll();
 		logger.info("resumeAll");
-		return ResponseEntity.ok("ok");
+		return ResponseEntity.ok(new BrianResponse<>(true, "ok"));
 	}
 	
 	@ResponseBody
@@ -390,7 +392,7 @@ public class TriggerController {
 	public ResponseEntity<?> pauseScheduler() throws SchedulerException {
 		scheduler.pauseAll();
 		logger.info("pauseAll");
-		return ResponseEntity.ok("ok");
+		return ResponseEntity.ok(new BrianResponse<>(true, "ok"));
 	}
 	
 	@ResponseBody
@@ -398,7 +400,7 @@ public class TriggerController {
 	public ResponseEntity<?> startScheduler() throws SchedulerException {
 		scheduler.start();
 		logger.info("start");
-		return ResponseEntity.ok("ok");
+		return ResponseEntity.ok(new BrianResponse<>(true, "ok"));
 	}
 	
 	@ResponseBody
@@ -406,7 +408,7 @@ public class TriggerController {
 	public ResponseEntity<?> standbyScheduler() throws SchedulerException {
 		scheduler.standby();
 		logger.info("standby");
-		return ResponseEntity.ok("ok");
+		return ResponseEntity.ok(new BrianResponse<>(true, "ok"));
 	}
 	
 	private ScheduleBuilder<? extends Trigger> getSchedule(BrianTriggerRequest triggerRequest) throws ParseException {

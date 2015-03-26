@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * {@link DataSource}に関するSpring Java Configurationクラス。
+ * {@link DataSource} Spring Java Configuration.
  * 
  * @since 1.0
  * @author daisuke
