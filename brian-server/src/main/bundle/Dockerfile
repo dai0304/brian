@@ -1,0 +1,18 @@
+FROM dockerfile/java:oracle-java8
+EXPOSE 8080
+WORKDIR /opt/${artifactId}/
+ADD logback.xml /opt/${artifactId}/logback.xml
+ADD ${jarFilename} /opt/${artifactId}/
+
+CMD /usr/bin/java \
+  -Xms512m \
+  -Xmx1g \
+  -Dfile.encoding=UTF-8 \
+  -DJDBC_CONNECTION_STRING=\$JDBC_CONNECTION_STRING \
+  -DDB_USERNAME=\$DB_USERNAME \
+  -DDB_PASSWORD=\$DB_PASSWORD \
+  -DBRIAN_TOPIC_ARN=\$BRIAN_TOPIC_ARN \
+  -Dspring.profiles.active=\$SPRING_PROFILES_ACTIVE \
+  -Dlogging.config=/opt/${artifactId}/logback.xml \
+  -Dserver.port=8080 \
+  -jar ${jarFilename}

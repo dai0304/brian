@@ -9,7 +9,7 @@ buildscript {
 	dependencies {
 		classpath 'org.hibernate.build.gradle:version-injection-plugin:1.0.0'
 		classpath 'org.springframework.boot:spring-boot-gradle-plugin:1.1.8.RELEASE'
-		classpath 'jp.classmethod.aws:gradle-aws-plugin:0.13.2'
+		classpath 'jp.classmethod.aws:gradle-aws-plugin:0.15'
 	}
 }
 
@@ -22,14 +22,11 @@ plugins {
 allprojects {
 	apply plugin: 'base'
 	group = 'jp.classmethod.aws.brian'
-	version = '0.13.3'
+	version = '0.14'
 }
 
 def javaProjects() {
 	subprojects
-}
-def warProjects() {
-	[project(':brian-server')]
 }
 
 configure(javaProjects()) {
@@ -49,7 +46,7 @@ configure(javaProjects()) {
 
 		// spring framework
 		springVersion = '4.1.1.RELEASE'
-		springBootVersion = '1.1.8.RELEASE'
+		springBootVersion = '1.2.1.RELEASE'
 		mysqlVersion = '5.1.22'
 		guavaVersion = '18.0'
 		jacksonVersion = '2.4.3'
@@ -122,41 +119,6 @@ configure(javaProjects()) {
 	}
 }
 
-configure(warProjects()) {
-	apply plugin: 'war'
-	configurations {
-		providedRuntime
-	}
-	dependencies {
-		providedRuntime "org.springframework.boot:spring-boot-starter-tomcat:1.1.8.RELEASE"
-	}
-	
-	// ======== local boot ========
-	sourceSets.main.output.classesDir = 'src/main/webapp/WEB-INF/classes'
-	sourceSets.main.output.resourcesDir = 'src/main/webapp/WEB-INF/classes'
-
-	clean {
-		delete << 'src/main/webapp/WEB-INF/classes'
-	}
-	
-	apply plugin: 'spring-boot'
-	bootRun {
-		systemProperty('JDBC_CONNECTION_STRING', project.JDBC_CONNECTION_STRING)
-		systemProperty('DB_USERNAME', project.DB_USERNAME)
-		systemProperty('DB_PASSWORD', project.DB_PASSWORD)
-		systemProperty('BRIAN_TOPIC_ARN', project.BRIAN_TOPIC_ARN)
-		systemProperty('aws.accessKeyId', project.awsAccessKey)
-		systemProperty('aws.secretKey', project.awsSecretKey)
-		
-		if (project.hasProperty('springProfilesActive')) {
-			systemProperty('spring.profiles.active', project.springProfilesActive)
-		}
-		if (project.hasProperty('logbackConfigurationFile')) {
-			systemProperty('logback.configurationFile', project.logbackConfigurationFile)
-		}
-	}
-}
-
 
 // ======== license headers ========
 apply plugin: 'license'
@@ -176,16 +138,15 @@ license {
 apply plugin: 'aws'
 
 aws {
-	assert project.hasProperty('awsAccessKeyForRelease') && project.hasProperty('awsSecretKeyForRelease'): "AWS credential is required"
-	accessKeyId project.awsAccessKeyForRelease
-	secretKey project.awsSecretKeyForRelease
+	assert project.hasProperty('awsProfileForRelease'): "AWS profile for release is required"
+	profileName project.awsProfileForRelease
 	region 'ap-northeast-1'
 }
 
-task uploadArchives(dependsOn: [':brian-sdk:uploadArchives', ':brian-server:uploadWar'])
+task uploadArchives(dependsOn: [':brian-sdk:uploadArchives', ':brian-server:uploadBundle'])
 
 
 // ======== Tasks ========
 task wrapper(type: Wrapper) {
-	gradleVersion = '2.1'
+	gradleVersion = '2.3'
 }
