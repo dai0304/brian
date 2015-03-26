@@ -17,8 +17,6 @@ defaultTasks 'clean', 'build', 'bootRun'
 
 // ======== Java ========
 apply plugin: 'java'
-apply plugin: 'war'
-apply plugin: 'eclipse'
 sourceCompatibility = targetCompatibility = 1.8
 tasks.withType(AbstractCompile) each {
 	it.options.encoding = ext.defaultEncoding
@@ -43,10 +41,13 @@ configurations {
 	providedRuntime
 }
 dependencies {
+	// Spring
 	compile "org.springframework.boot:spring-boot-starter-actuator:$springBootVersion"
 	compile "org.springframework.boot:spring-boot-starter-jdbc:$springBootVersion"
 	compile "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
-	
+	compile "org.springframework:spring-context-support:$springVersion"
+	compile "org.springframework:spring-webmvc:$springVersion"
+
 	// Logging
 	compile "org.slf4j:slf4j-api:$slf4jVersion"
 	compile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
@@ -56,11 +57,6 @@ dependencies {
 		exclude group: 'org.slf4j', module: 'slf4j-log4j12'
 	}
 	
-	// Spring
-	compile "org.springframework:spring-context-support:$springVersion"
-//	compile "org.springframework:spring-tx:$springVersion"
-//	compile "org.springframework:spring-jdbc:$springVersion"
-	compile "org.springframework:spring-webmvc:$springVersion"
 	
 	// Other
 	compile "mysql:mysql-connector-java:$mysqlVersion"
@@ -108,11 +104,41 @@ versionInjection {
 }
 
 
-// ======== Spring Boot ========
+// ======== boot ========
 apply plugin: 'spring-boot'
+bootRun {
+	systemProperty('JDBC_CONNECTION_STRING', project.JDBC_CONNECTION_STRING)
+	systemProperty('DB_USERNAME', project.DB_USERNAME)
+	systemProperty('DB_PASSWORD', project.DB_PASSWORD)
+	systemProperty('BRIAN_TOPIC_ARN', project.BRIAN_TOPIC_ARN)
+	systemProperty('aws.profile', project.awsProfile)
+	
+	if (project.hasProperty('springProfilesActive')) {
+		systemProperty('spring.profiles.active', project.springProfilesActive)
+	}
+	if (project.hasProperty('logbackConfigurationFile')) {
+		systemProperty('logging.config', project.logbackConfigurationFile)
+	}
+}
+
+sourceSets.main.output.classesDir = 'src/main/webapp/WEB-INF/classes'
+sourceSets.main.output.resourcesDir = 'src/main/webapp/WEB-INF/classes'
+
+clean {
+	delete << 'src/main/webapp/WEB-INF/classes'
+}
 
 
-// ======== packaging ========
+// ======== release ========
+apply plugin: 'aws-s3'
+
+aws {
+	assert project.hasProperty('awsProfileForRelease'): "AWS profile for release is required"
+	profileName project.awsProfileForRelease
+	region 'ap-northeast-1'
+}
+
+// ======== packaging and release : docker ========
 jar {
 	manifest {
 		attributes(
@@ -123,28 +149,44 @@ jar {
 	}
 }
 
-
-// ======== release ========
-apply plugin: 'aws-s3'
-
-aws {
-	assert project.hasProperty('awsAccessKeyForRelease') && project.hasProperty('awsSecretKeyForRelease'): "AWS credential is required"
-	accessKeyId project.awsAccessKeyForRelease
-	secretKey project.awsSecretKeyForRelease
-	region 'ap-northeast-1'
+task createDockerfile(type: Copy, dependsOn: jar) {
+	from 'src/main/bundle/Dockerfile'
+	into 'build/bundle'
+	expand(jarFilename: jar.archiveName, artifactId: project.ext.artifactId)
 }
 
-//task uploadWar(type: jp.classmethod.aws.gradle.s3.AmazonS3FileUploadTask, dependsOn: war) {
-//	bucketName 'cm-public-eb-applications'
-//	key "${artifactId}/${artifactId}-${version}.war"
-//	file project.war.archivePath
-//	overwrite project.version.endsWith('-SNAPSHOT')
-//}
+task createBundleResources(type: Copy) {
+	from 'src/main/bundle'
+	into 'build/bundle'
+	exclude 'src/main/bundle/Dockerfile'
+}
 
-task uploadDemoTemplate(type: jp.classmethod.aws.gradle.s3.AmazonS3FileUploadTask) {
+task createBundle(type: Zip, dependsOn: [createDockerfile, createBundleResources, bootRepackage]) {
+	archiveName = jar.archiveName.substring(0, jar.archiveName.length() - 4) + '.zip'
+	from 'build/bundle'
+	from jar.archivePath
+}
+
+task uploadBundle(type: jp.classmethod.aws.gradle.s3.AmazonS3FileUploadTask, dependsOn: createBundle) {
+	description "Upload ${artifactId} application bundle file to S3."
+	
+	bucketName 'cm-public-eb-applications'
+	key "${artifactId}/${artifactId}-${version}.zip"
+	file project.createBundle.archivePath
+	overwrite project.version.endsWith('-SNAPSHOT')
+}
+
+// ======== packaging and release : cfn ========
+task createCfnTemplate(type: Copy) {
+	from 'src/main/cloudformation'
+	into 'build/cloudformation'
+	expand(version: project.version)
+}
+
+task uploadDemoTemplate(type: jp.classmethod.aws.gradle.s3.AmazonS3FileUploadTask, dependsOn: createCfnTemplate) {
 	bucketName 'cm-public-eb-applications'
 	key "${artifactId}/${artifactId}-${version}.template"
-	file file('brian-demo.template')
+	file file('build/cloudformation/brian-demo.template')
 	overwrite project.version.endsWith('-SNAPSHOT')
 } << {
 	println "open https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-1#cstack=sn~brian-demo|turl~${resourceUrl}"
