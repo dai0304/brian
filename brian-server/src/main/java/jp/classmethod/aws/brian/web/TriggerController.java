@@ -58,13 +58,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
  * Controller implementation to operate trigger groups and triggers.
@@ -94,14 +92,6 @@ public class TriggerController {
 	@Value("#{systemProperties['BRIAN_TOPIC_ARN']}")
 	String topicArn;
 	
-	
-	@ExceptionHandler(Throwable.class)
-	@ResponseBody
-	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-	public String throwableHandler(Throwable e) {
-		logger.error("unexpected", e);
-		return e.getMessage();
-	}
 	
 	/**
 	 * Get trigger groups.
