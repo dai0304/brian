@@ -25,7 +25,6 @@ dependencies {
 	testCompile "junit:junit:$junitVersion"
 	testCompile "org.mockito:mockito-core:$mockitoCoreVersion"
 	
-//	deployerJars 'org.springframework.build.aws:org.springframework.build.aws.maven:3.0.0.RELEASE'
 	deployerJars 'org.springframework.build:aws-maven:5.0.0.RELEASE'
 }
 
@@ -60,11 +59,12 @@ uploadArchives {
 		mavenDeployer {
 			configuration = configurations.deployerJars
 			
+			def cred = aws.newCredentialsProvider(project.awsProfileForRelease).credentials
 			repository(url: 's3://public-maven.classmethod.info/release') {
-				authentication(userName: project.awsAccessKeyForRelease, password: project.awsSecretKeyForRelease)
+				authentication(userName: cred.getAWSAccessKeyId(), password: cred.getAWSSecretKey())
 			}
 			snapshotRepository(url: 's3://public-maven.classmethod.info/snapshot') {
-				authentication(userName: project.awsAccessKeyForRelease, password: project.awsSecretKeyForRelease)
+				authentication(userName: cred.getAWSAccessKeyId(), password: cred.getAWSSecretKey())
 			}
 
 			pom.groupId = project.group

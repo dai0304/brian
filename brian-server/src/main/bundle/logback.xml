@@ -25,13 +25,13 @@
     </encoder>
   </appender>
 
-  <!-- <logger name="org.springframework" level="DEBUG" /> -->
+  <logger name="jp.classmethod.aws.brian" level="INFO" />
   <logger name="org.springframework.jdbc.datasource" level="INFO" />
   <logger name="org.springframework.scheduling.quartz.LocalDataSourceJobStore" level="INFO" />
   <logger name="org.apache.http" level="INFO" />
   <logger name="org.quartz.core.QuartzSchedulerThread" level="DEBUG" />
 
-  <root level="INFO">
+  <root level="WARN">
     <appender-ref ref="STDOUT" />
   </root>
 </configuration>

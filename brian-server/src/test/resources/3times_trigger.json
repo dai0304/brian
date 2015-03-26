@@ -3,9 +3,10 @@
   "description": "Sample trigger request - 3 times",
   "scheduleType": "simple",
   "misfireInstruction": "IGNORE",
-  "repeatInterval": 10000,
+  "repeatInterval": 60000,
   "repeatCount": 2,
   "jobData": {
-    "batchJobName": "3times"
+    "foo": "bar",
+    "baz": "qux"
   }
 }

@@ -1,10 +1,9 @@
-awsAccessKey = <<<your access key to publish SNS messages>>>
-awsSecretKey = <<<your secret access key to publish SNS messages>>>
-
 JDBC_CONNECTION_STRING = <<<JDBC connection string to store job details>>>
 DB_USERNAME = <<<database username>>>
 DB_PASSWORD = <<<database password>>>
-TOPIC_ARN = <<<SNS topic ARN to publish message>>>
+BRIAN_TOPIC_ARN = <<<SNS topic ARN to publish message>>>
 
 springProfilesActive = <<<development or production>>>
 logbackConfigurationFile = /path/to/your/logback.xml
+
+awsProfile = cm-awsteam-miyamoto
