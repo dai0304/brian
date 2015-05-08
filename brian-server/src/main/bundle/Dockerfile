@@ -1,4 +1,4 @@
-FROM dockerfile/java:oracle-java8
+FROM java:openjdk-8-jdk
 EXPOSE 8080
 WORKDIR /opt/${artifactId}/
 ADD logback.xml /opt/${artifactId}/logback.xml
