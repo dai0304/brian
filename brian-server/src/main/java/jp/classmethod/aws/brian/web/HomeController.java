@@ -36,10 +36,4 @@ public class HomeController {
 	public String index() {
 		return "ok";
 	}
-	
-	@ResponseBody
-	@RequestMapping("/healthcheck")
-	public String healthcheck() {
-		return "ok";
-	}
 }

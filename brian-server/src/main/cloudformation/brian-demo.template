@@ -380,7 +380,7 @@
           { "Namespace" : "aws:autoscaling:asg", "OptionName" : "MinSize", "Value" : "1" },
           { "Namespace" : "aws:autoscaling:asg", "OptionName" : "MaxSize", "Value" : "4" },
           
-          { "Namespace" : "aws:elasticbeanstalk:application", "OptionName" : "Application Healthcheck URL", "Value" : "/healthcheck" },
+          { "Namespace" : "aws:elasticbeanstalk:application", "OptionName" : "Application Healthcheck URL", "Value" : "/health" },
           
           { "Namespace" : "aws:elasticbeanstalk:application:environment", "OptionName" : "JDBC_CONNECTION_STRING", "Value" : { "Fn::Join" : [ "", [
             "jdbc:mysql://",
